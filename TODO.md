@@ -104,7 +104,7 @@ A data-driven application that displays local information (restaurants, parks, e
 - [X] Set up Jest for backend testing
 - [X] Write unit tests for data models
 - [X] Write integration tests for API endpoints
-- [ ] Implement test coverage reporting
+- [X] Implement test coverage reporting
 
 ### 1.3 Frontend Testing (Dato)
 
