@@ -1,0 +1,16 @@
+// frontend/tsconfig.app.json
+
+{
+  "extends": "./tsconfig.json", // <-- Inherits our path alias!
+  "compilerOptions": {
+    "composite": true,          // <-- The setting that fixes the error!
+    "jsx": "react-jsx",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["vite/client", "vitest/globals"]
+    // Any other linting/strictness rules can also go here
+  },
+  "include": ["src", "../shared"]
+}
+
