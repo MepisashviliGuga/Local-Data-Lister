@@ -97,7 +97,7 @@ A data-driven application that displays local information (restaurants, parks, e
 - [X] Define test strategy document
 - [X] Set up testing environment
 - [X] Create test data sets
-- [ ] Define test cases for each feature
+- [X] Define test cases for each feature
 
 ### 1.2 Backend Testing (Giorgi)
 
@@ -113,22 +113,13 @@ A data-driven application that displays local information (restaurants, parks, e
 - [ ] Write integration tests for user flows
 - [ ] Implement E2E tests with Cypress
 
-### 1.4 Performance Testing (Guga)
-
-- [ ] Set up performance testing tools
-- [ ] Write load tests for API endpoints
-- [ ] Test search functionality performance
-- [ ] Test caching mechanism
-
 ## 2. Code Quality & Architecture (120 pts - 27%)
 
 ### 2.1 Project Setup (Guga)
 
-- [ ] Initialize Git repository
-- [ ] Set up project structure
-- [ ] Configure TypeScript
-- [ ] Set up ESLint and Prettier
-- [ ] Configure CI/CD pipeline
+- [X] Initialize Git repository
+- [X] Set up project structure
+- [X] Configure TypeScript
 
 ### 2.2 Backend Architecture (Giorgi)
 
