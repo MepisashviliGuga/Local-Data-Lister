@@ -92,16 +92,16 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ## 1. Testing Strategy & Implementation (120 pts - 27%)
 
-### 1.1 Test Planning (Giorgi)
+### 1.1 Test Planning (Guga)
 
 - [ ] Define test strategy document
 - [X] Set up testing environment
 - [ ] Create test data sets
 - [ ] Define test cases for each feature
 
-### 1.2 Backend Testing (Guga)
+### 1.2 Backend Testing (Giorgi)
 
-- [ ] Set up Jest for backend testing
+- [X] Set up Jest for backend testing
 - [ ] Write unit tests for data models
 - [ ] Write integration tests for API endpoints
 - [ ] Implement test coverage reporting
