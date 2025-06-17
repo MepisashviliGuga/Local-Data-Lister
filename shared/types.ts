@@ -6,7 +6,7 @@ export interface Restaurant {
   rating: number | null;
   priceRange: string | null;
   openingHours: string;
-  type: "restaurant";
+  type: 'restaurant';
 }
 
 export interface Park {
@@ -15,7 +15,7 @@ export interface Park {
   amenities: string[];
   size: string;
   openingHours: string;
-  type: "park";
+  type: 'park';
 }
 
 export interface Event {
@@ -26,5 +26,7 @@ export interface Event {
   description: string;
   category: string;
   price: number | null; // Allow null if free
-  type: "event";
+  type: 'event';
 }
+
+export type DataItem = Restaurant | Park | Event;

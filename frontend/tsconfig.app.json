@@ -1,30 +1,16 @@
+// frontend/tsconfig.app.json
+
 {
+  "extends": "./tsconfig.json", // <-- Inherits our path alias!
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "target": "ES2020",
-    "useDefineForClassFields": true,
+    "composite": true,          // <-- The setting that fixes the error!
+    "jsx": "react-jsx",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "skipLibCheck": true,
-    "isolatedModules": true,
-     "types": ["vite/client", "vitest/globals"],
-
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-    "jsx": "react-jsx",
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "types": ["vite/client", "vitest/globals"]
+    // Any other linting/strictness rules can also go here
   },
-  "include": ["src"]
+  "include": ["src", "../shared"]
 }
+
