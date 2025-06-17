@@ -404,3 +404,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# New additions
+coverage/
+cypress/videos/
+cypress/screenshots/
