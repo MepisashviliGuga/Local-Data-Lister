@@ -94,14 +94,14 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 1.1 Test Planning (Guga)
 
-- [ ] Define test strategy document
+- [X] Define test strategy document
 - [X] Set up testing environment
-- [ ] Create test data sets
+- [X] Create test data sets
 - [ ] Define test cases for each feature
 
 ### 1.2 Backend Testing (Giorgi)
 
-- [X] Set up Jest for backend testing
+- [ ] Set up Jest for backend testing
 - [ ] Write unit tests for data models
 - [ ] Write integration tests for API endpoints
 - [ ] Implement test coverage reporting

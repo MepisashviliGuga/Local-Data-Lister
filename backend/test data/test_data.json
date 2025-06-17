@@ -1,0 +1,62 @@
+{
+  "restaurants": [
+    {
+      "name": "The Italian Place",
+      "location": "123 Main St",
+      "cuisine": "Italian",
+      "rating": 4.5,
+      "priceRange": "$$",
+      "openingHours": "11:00 AM - 10:00 PM",
+      "type": "restaurant"
+    },
+    {
+      "name": "Sushi House",
+      "location": "456 Oak Ave",
+      "cuisine": "Japanese",
+      "rating": 4.0,
+      "priceRange": "$$$",
+      "openingHours": "12:00 PM - 9:00 PM",
+      "type": "restaurant"
+    }
+  ],
+  "parks": [
+    {
+      "name": "Central Park",
+      "location": "Downtown",
+      "amenities": ["playground", "walking trails", "picnic areas"],
+      "size": "10 acres",
+      "openingHours": "6:00 AM - 10:00 PM",
+      "type": "park"
+    },
+    {
+      "name": "Riverside Park",
+      "location": "Riverfront",
+      "amenities": ["boat launch", "fishing pier", "bike trails"],
+      "size": "5 acres",
+      "openingHours": "7:00 AM - 9:00 PM",
+      "type": "park"
+    }
+  ],
+  "events": [
+    {
+      "name": "Summer Concert Series",
+      "location": "Central Park",
+      "date": "2024-07-20",
+      "time": "7:00 PM",
+      "description": "Free outdoor concert featuring local bands.",
+      "category": "Music",
+      "price": null,
+      "type": "event"
+    },
+    {
+      "name": "Farmers Market",
+      "location": "Town Square",
+      "date": "2024-07-21",
+      "time": "9:00 AM - 1:00 PM",
+      "description": "Fresh produce, local crafts, and live music.",
+      "category": "Market",
+       "price": null, 
+       "type": "event"
+    }
+  ]
+}
