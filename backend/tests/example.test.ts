@@ -1,5 +1,6 @@
 import * as testData from "../test data/test_data.json";
 import { Restaurant, Park, Event } from "../../shared/types";
+import { describe, it, expect } from '@jest/globals';
 
 describe("Data Model Tests", () => {
   describe("Restaurant Tests", () => {

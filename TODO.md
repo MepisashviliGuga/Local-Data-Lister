@@ -102,8 +102,8 @@ A data-driven application that displays local information (restaurants, parks, e
 ### 1.2 Backend Testing (Giorgi)
 
 - [X] Set up Jest for backend testing
-- [ ] Write unit tests for data models
-- [ ] Write integration tests for API endpoints
+- [X] Write unit tests for data models
+- [X] Write integration tests for API endpoints
 - [ ] Implement test coverage reporting
 
 ### 1.3 Frontend Testing (Dato)
