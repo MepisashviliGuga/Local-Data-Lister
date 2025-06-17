@@ -97,11 +97,11 @@ A data-driven application that displays local information (restaurants, parks, e
 - [X] Define test strategy document
 - [X] Set up testing environment
 - [X] Create test data sets
-- [ ] Define test cases for each feature
+- [X] Define test cases for each feature
 
 ### 1.2 Backend Testing (Giorgi)
 
-- [ ] Set up Jest for backend testing
+- [X] Set up Jest for backend testing
 - [ ] Write unit tests for data models
 - [ ] Write integration tests for API endpoints
 - [ ] Implement test coverage reporting
