@@ -92,137 +92,137 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ## 1. Testing Strategy & Implementation (120 pts - 27%)
 
-### 1.1 Test Planning
+### 1.1 Test Planning (Giorgi)
 
-- [ ] Define test strategy document (Giorgi)
-- [ ] Set up testing environment (Dato)
-- [ ] Create test data sets (Guga)
-- [ ] Define test cases for each feature (All)
+- [ ] Define test strategy document 
+- [ ] Set up testing environment 
+- [ ] Create test data sets 
+- [ ] Define test cases for each feature 
 
-### 1.2 Backend Testing
+### 1.2 Backend Testing (Guga)
 
-- [ ] Set up Jest for backend testing (Giorgi)
-- [ ] Write unit tests for data models (Dato)
-- [ ] Write integration tests for API endpoints (Guga)
-- [ ] Implement test coverage reporting (All)
+- [ ] Set up Jest for backend testing 
+- [ ] Write unit tests for data models 
+- [ ] Write integration tests for API endpoints 
+- [ ] Implement test coverage reporting 
 
-### 1.3 Frontend Testing
+### 1.3 Frontend Testing (Dato)
 
-- [ ] Set up React Testing Library (Dato)
-- [ ] Write component unit tests (Guga)
-- [ ] Write integration tests for user flows (Giorgi)
-- [ ] Implement E2E tests with Cypress (All)
+- [ ] Set up React Testing Library 
+- [ ] Write component unit tests 
+- [ ] Write integration tests for user flows 
+- [ ] Implement E2E tests with Cypress 
 
-### 1.4 Performance Testing
+### 1.4 Performance Testing (Guga)
 
-- [ ] Set up performance testing tools (Guga)
-- [ ] Write load tests for API endpoints (Dato)
-- [ ] Test search functionality performance (Giorgi)
-- [ ] Test caching mechanism (All)
+- [ ] Set up performance testing tools 
+- [ ] Write load tests for API endpoints 
+- [ ] Test search functionality performance 
+- [ ] Test caching mechanism 
 
 ## 2. Code Quality & Architecture (120 pts - 27%)
 
-### 2.1 Project Setup
+### 2.1 Project Setup (Guga)
 
-- [ ] Initialize Git repository (Guga)
-- [ ] Set up project structure (Dato)
-- [ ] Configure TypeScript (Giorgi)
-- [ ] Set up ESLint and Prettier (All)
-- [ ] Configure CI/CD pipeline (All)
+- [ ] Initialize Git repository 
+- [ ] Set up project structure 
+- [ ] Configure TypeScript 
+- [ ] Set up ESLint and Prettier 
+- [ ] Configure CI/CD pipeline 
 
-### 2.2 Backend Architecture
+### 2.2 Backend Architecture (Giorgi)
 
-- [ ] Design API structure (Giorgi)
-- [ ] Implement data models (Dato)
-- [ ] Set up Express.js server (Guga)
-- [ ] Implement error handling (All)
-- [ ] Set up logging system (All)
+- [ ] Design API structure 
+- [ ] Implement data models 
+- [ ] Set up Express.js server 
+- [ ] Implement error handling 
+- [ ] Set up logging system 
 
-### 2.3 Frontend Architecture
+### 2.3 Frontend Architecture (Dato)
 
-- [ ] Set up React with TypeScript (Dato)
-- [ ] Implement component structure (Guga)
-- [ ] Set up state management (Giorgi)
-- [ ] Implement routing (All)
-- [ ] Set up styling system (All)
+- [ ] Set up React with TypeScript 
+- [ ] Implement component structure 
+- [ ] Set up state management 
+- [ ] Implement routing 
+- [ ] Set up styling system 
 
-### 2.4 Data Management
+### 2.4 Data Management (Dato)
 
-- [ ] Design data structure (Guga)
-- [ ] Implement data validation (Giorgi)
-- [ ] Set up caching system (Dato)
-- [ ] Implement search functionality (All)
+- [ ] Design data structure 
+- [ ] Implement data validation 
+- [ ] Set up caching system 
+- [ ] Implement search functionality 
 
 ## 3. Functionality & User Experience (80 pts - 18%)
 
-### 3.1 Core Features
+### 3.1 Core Features (Guga)
 
-- [ ] Implement data display (Dato)
-- [ ] Add search functionality (Guga)
-- [ ] Implement filtering (Giorgi)
-- [ ] Add sorting options (All)
-- [ ] Implement pagination (All)
+- [ ] Implement data display 
+- [ ] Add search functionality 
+- [ ] Implement filtering 
+- [ ] Add sorting options 
+- [ ] Implement pagination 
 
-### 3.2 User Interface
+### 3.2 User Interface (Dato)
 
-- [ ] Design responsive layout (Guga)
-- [ ] Implement loading states (Giorgi)
-- [ ] Add error handling UI (Dato)
-- [ ] Implement accessibility features (All)
-- [ ] Add animations and transitions (All)
+- [ ] Design responsive layout 
+- [ ] Implement loading states 
+- [ ] Add error handling UI 
+- [ ] Implement accessibility features 
+- [ ] Add animations and transitions 
 
-### 3.3 User Experience
+### 3.3 User Experience (Giorgi)
 
-- [ ] Implement user feedback (Giorgi)
-- [ ] Add keyboard navigation (Dato)
-- [ ] Optimize performance (Guga)
-- [ ] Implement progressive loading (All)
+- [ ] Implement user feedback 
+- [ ] Add keyboard navigation 
+- [ ] Optimize performance 
+- [ ] Implement progressive loading 
 
 ## 4. Documentation & Technical Decisions (80 pts - 18%)
 
-### 4.1 Technical Documentation
+### 4.1 Technical Documentation (Guga)
 
-- [ ] Create API documentation (Giorgi)
-- [ ] Document component structure (Dato)
-- [ ] Create data model documentation (Guga)
-- [ ] Document testing strategy (All)
+- [ ] Create API documentation 
+- [ ] Document component structure 
+- [ ] Create data model documentation 
+- [ ] Document testing strategy 
 
-### 4.2 User Documentation
+### 4.2 User Documentation (Giorgi)
 
-- [ ] Create user guide (Dato)
-- [ ] Write installation instructions (Guga)
-- [ ] Document deployment process (Giorgi)
-- [ ] Create troubleshooting guide (All)
+- [ ] Create user guide 
+- [ ] Write installation instructions 
+- [ ] Document deployment process 
+- [ ] Create troubleshooting guide 
 
-### 4.3 Development Documentation
+### 4.3 Development Documentation (Dato)
 
-- [ ] Document development setup (Guga)
-- [ ] Create contribution guidelines (Giorgi)
-- [ ] Document coding standards (Dato)
-- [ ] Create architecture diagrams (All)
+- [ ] Document development setup 
+- [ ] Create contribution guidelines 
+- [ ] Document coding standards 
+- [ ] Create architecture diagrams 
 
 ## 5. Deployment & DevOps (50 pts - 11%)
 
-### 5.1 Development Environment
+### 5.1 Development Environment (All)
 
-- [ ] Set up development environment (Giorgi)
-- [ ] Configure local development (Dato)
-- [ ] Set up development tools (Guga)
-- [ ] Configure debugging tools (All)
+- [ ] Set up development environment 
+- [ ] Configure local development 
+- [ ] Set up development tools 
+- [ ] Configure debugging tools 
 
 ### 5.2 Production Environment
 
-- [ ] Set up production environment (Dato)
-- [ ] Configure production server (Guga)
-- [ ] Set up monitoring (Giorgi)
-- [ ] Implement backup strategy (All)
+- [ ] Set up production environment 
+- [ ] Configure production server 
+- [ ] Set up monitoring 
+- [ ] Implement backup strategy 
 
 ### 5.3 Deployment
 
-- [ ] Set up deployment pipeline (Guga)
-- [ ] Configure environment variables (Giorgi)
-- [ ] Set up SSL certificates (Dato)
-- [ ] Implement zero-downtime deployment (All)
+- [ ] Set up deployment pipeline 
+- [ ] Configure environment variables 
+- [ ] Set up SSL certificates 
+- [ ] Implement zero-downtime deployment 
 
 ## Git Workflow
 
