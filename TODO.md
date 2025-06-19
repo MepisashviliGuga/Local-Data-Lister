@@ -123,11 +123,11 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 2.2 Backend Architecture (Giorgi)
 
-- [ ] Design API structure
-- [ ] Implement data models
-- [ ] Set up Express.js server
-- [ ] Implement error handling
-- [ ] Set up logging system
+- [X] Design API structure
+- [X] Implement data models
+- [X] Set up Express.js server
+- [X] Implement error handling
+- [X] Set up logging system
 
 ### 2.3 Frontend Architecture (Dato)
 
