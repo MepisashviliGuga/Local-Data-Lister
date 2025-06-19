@@ -1,97 +1,78 @@
-import express, { Request, Response, NextFunction } from "express";
-import * as testData from "../test data/test_data.json";
-import logger from "./logger"; // Import the Winston logger
+import * as dotenv from 'dotenv';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
+import logger from "./logger";
+import fetch, { Headers, RequestInit } from 'node-fetch';
+
+dotenv.config();
 
 const app = express();
-const PORT = 3001;
+const port = 3001;
+const apiKey = process.env.RAPIDAPI_KEY;
 
-// Enable CORS for all routes
+app.use(express.json());
 app.use(cors());
 
-// Middleware to parse JSON bodies
-app.use(express.json());
+app.get('/api/nearby', async (req: Request, res: Response) => {
+    const { latitude, longitude, keyword } = req.query;
 
-// Custom type definition for your data
-type DataItem =
-  | {
-      name: string;
-      location: string;
-      cuisine: string;
-      rating: number | null;
-      priceRange: string;
-      openingHours: string;
-      type: "restaurant";
+    if (!latitude || !longitude) {
+        res.status(400).send({ message: 'Missing required parameters.' });
     }
-  | {
-      name: string;
-      location: string;
-      amenities: string[];
-      size: string;
-      openingHours: string;
-      type: "park";
+
+    if (!apiKey) {
+        logger.error("RAPIDAPI_KEY is not set in environment variables");
+        res.status(500).json({ message: 'API key not configured.' });
+        return;
     }
-  | {
-      name: string;
-      location: string;
-      date: string;
-      time: string;
-      description: string;
-      category: string;
-      price: number | null;
-      type: "event";
+
+    const url = `https://search-nearby-places.p.rapidapi.com/api/v1/topfivePlaces?latitude=${latitude}&longitude=${longitude}&keyword=${keyword}`;
+
+    const headers = new Headers();
+    headers.append('X-RapidAPI-Key', apiKey);
+    headers.append('X-RapidAPI-Host', 'search-nearby-places.p.rapidapi.com');
+
+    const options: RequestInit = {
+        method: 'GET',
+        headers: headers,
     };
 
-// Combine all data into a single array
-const allItems: DataItem[] = [
-  ...(testData.restaurants as DataItem[]),
-  ...(testData.parks as DataItem[]),
-  ...(testData.events as DataItem[]),
-];
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error(`RapidAPI error! Status: ${response.status}`);
+        }
+        const data = await response.json();
 
-// 1. GET /api/items - Returns all items
-app.get("/api/items", (req: Request, res: Response) => {
-  try {
-    logger.info('Fetching all items'); // Log the request
-    res.json(allItems);
-  } catch (error) {
-    logger.error("Error fetching items:", error); // Log the error
-    res.status(500).json({ message: "Failed to fetch items" });
-  }
+        // Log the full raw data for inspection
+        logger.info(`Raw API Data: ${JSON.stringify(data, null, 2)}`);
+
+        if (!data.top5 || !Array.isArray(data.top5)) {
+            logger.warn('API returned no results or invalid format');
+            res.status(200).json([]);
+        }
+
+        // Transform the data
+        const transformedResults = data.top5.map((item: any) => {
+
+            return {
+                name: item.name || 'Unknown',
+                location: item.address || 'Unknown',
+                type: item.category || 'Unknown',
+                rating: item.rating || 0
+            };
+        });
+
+        logger.info(`Transformed Data: ${JSON.stringify(transformedResults, null, 2)}`);
+
+        res.json(transformedResults);
+
+    } catch (error) {
+        logger.error(`Error fetching data: ${error}`);
+        res.status(500).send({ message: 'Failed to fetch nearby places.' });
+    }
 });
 
-// 2. GET /api/search?q=searchTerm - Returns items matching the search term
-app.get("/api/search", (req: Request, res: Response) => {
-  const { q } = req.query;
-
-  if (!q || typeof q !== "string") {
-    logger.warn('Search query parameter missing'); // Log the warning
-    res
-      .status(400)
-      .json({ message: "A search query parameter 'q' is required." });
-  }
-
-  try {
-    // q is checked above to be a string, but TypeScript may not know that.
-    const searchTerm = (q as string).toLowerCase();
-    logger.info(`Searching for: ${searchTerm}`); // Log the search term
-    const results = allItems.filter((item) =>
-      item.name.toLowerCase().includes(searchTerm)
-    );
-    res.json(results);
-  } catch (error) {
-    logger.error("Error during search:", error); // Log the error
-    res.status(500).json({ message: "Failed to perform search" });
-  }
-});
-
-// Error handling middleware (example)
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  logger.error("Unhandled error:", err); // Log unhandled errors
-  console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong!" });
-});
-
-app.listen(PORT, () => {
-  console.log(`Backend server is listening on http://localhost:${PORT}`);
+app.listen(port, () => {
+    logger.info(`Server running on port ${port}`);
 });

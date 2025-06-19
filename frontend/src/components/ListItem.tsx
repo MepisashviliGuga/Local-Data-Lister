@@ -1,4 +1,3 @@
-// frontend/src/components/ListItem.tsx
 import React from 'react';
 import { DataItem } from '../../../shared/types';
 
@@ -11,14 +10,8 @@ function ListItem({ item }: ListItemProps) {
         <div className="list-item">
             <h3 className="item-name">{item.name}</h3>
             <p>Type: {item.type}</p>
-            {item.type === 'restaurant' && <p>Cuisine: {item.cuisine}</p>}
-            {item.type === 'park' && <p>Amenities: {item.amenities.join(', ')}</p>}
-            {item.type === 'event' && (
-                <>
-                    <p>Date: {item.date}</p>
-                    <p>Time: {item.time}</p>
-                </>
-            )}
+            <p>location: {item.location}</p>
+             <hr className="divider" />
         </div>
     );
 }

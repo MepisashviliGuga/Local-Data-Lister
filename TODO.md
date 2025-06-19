@@ -139,10 +139,10 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 2.4 Data Management (Dato)
 
-- [ ] Design data structure
-- [ ] Implement data validation
-- [ ] Set up caching system
-- [ ] Implement search functionality
+- [X] Design data structure
+- [X] Implement data validation
+- [X] Set up caching system
+- [X] Implement search functionality
 
 ## 3. Functionality & User Experience (80 pts - 18%)
 

@@ -1,13 +1,19 @@
 // frontend/src/components/SearchFilter.tsx
-import React from 'react';
+import React, { useState } from 'react';
 
 export interface SearchFilterProps {
-    onFilterChange: (newFilterText: string) => void;
+    onSearch: (newFilterText: string) => void;
 }
 
-function SearchFilter({ onFilterChange }: SearchFilterProps) {
+function SearchFilter({ onSearch }: SearchFilterProps) {
+    const [inputText, setInputText] = useState('');
+
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        onFilterChange(event.target.value);
+        setInputText(event.target.value);
+    };
+
+    const handleSubmit = () => {
+        onSearch(inputText);
     };
 
     return (
@@ -17,8 +23,10 @@ function SearchFilter({ onFilterChange }: SearchFilterProps) {
                 id="search-filter"
                 type="text"
                 placeholder="Type to search..."
+                value={inputText}
                 onChange={handleChange}
             />
+            <button onClick={handleSubmit}>Search</button>
         </div>
     );
 }
