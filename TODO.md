@@ -108,10 +108,10 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 1.3 Frontend Testing (Dato)
 
-- [x] Set up React Testing Library
-- [ ] Write component unit tests
-- [ ] Write integration tests for user flows
-- [ ] Implement E2E tests with Cypress
+- [X] Set up React Testing Library
+- [X] Write component unit tests
+- [X] Write integration tests for user flows
+- [X] Implement E2E tests with Cypress
 
 ## 2. Code Quality & Architecture (120 pts - 27%)
 
