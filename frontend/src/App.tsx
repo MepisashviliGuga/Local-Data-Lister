@@ -2,7 +2,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'; // Import routing components
 import HomePage from './pages/HomePage';
-import './App.css'; // Import general styles
 
 function App() {
   return (
