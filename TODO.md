@@ -131,11 +131,11 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 2.3 Frontend Architecture (Dato)
 
-- [ ] Set up React with TypeScript
-- [ ] Implement component structure
-- [ ] Set up state management
-- [ ] Implement routing
-- [ ] Set up styling system
+- [X] Set up React with TypeScript
+- [X] Implement component structure
+- [X] Set up state management
+- [X] Implement routing
+- [X] Set up styling system
 
 ### 2.4 Data Management (Dato)
 
