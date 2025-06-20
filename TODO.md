@@ -108,10 +108,10 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 1.3 Frontend Testing (Dato)
 
-- [x] Set up React Testing Library
-- [ ] Write component unit tests
-- [ ] Write integration tests for user flows
-- [ ] Implement E2E tests with Cypress
+- [X] Set up React Testing Library
+- [X] Write component unit tests
+- [X] Write integration tests for user flows
+- [X] Implement E2E tests with Cypress
 
 ## 2. Code Quality & Architecture (120 pts - 27%)
 
@@ -123,26 +123,26 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 2.2 Backend Architecture (Giorgi)
 
-- [ ] Design API structure
-- [ ] Implement data models
-- [ ] Set up Express.js server
-- [ ] Implement error handling
-- [ ] Set up logging system
+- [X] Design API structure
+- [X] Implement data models
+- [X] Set up Express.js server
+- [X] Implement error handling
+- [X] Set up logging system
 
 ### 2.3 Frontend Architecture (Dato)
 
-- [ ] Set up React with TypeScript
-- [ ] Implement component structure
-- [ ] Set up state management
-- [ ] Implement routing
-- [ ] Set up styling system
+- [X] Set up React with TypeScript
+- [X] Implement component structure
+- [X] Set up state management
+- [X] Implement routing
+- [X] Set up styling system
 
 ### 2.4 Data Management (Dato)
 
-- [ ] Design data structure
-- [ ] Implement data validation
-- [ ] Set up caching system
-- [ ] Implement search functionality
+- [X] Design data structure
+- [X] Implement data validation
+- [X] Set up caching system
+- [X] Implement search functionality
 
 ## 3. Functionality & User Experience (80 pts - 18%)
 

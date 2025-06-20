@@ -1,20 +1,19 @@
-
-import { DataItem } from '../../../shared/types'; 
+import React from 'react';
+import { DataItem } from '../../../shared/types';
 
 interface ListItemProps {
-  item: DataItem;
+    item: DataItem;
 }
 
 function ListItem({ item }: ListItemProps) {
-  return (
-    <div style={{ border: '1px solid #ccc', padding: '10px', margin: '5px' }}>
-      <h3>{item.name}</h3>
-      <p>Type: {item.type}</p>
-      {/* We can even add type-specific details! */}
-      {item.type === 'restaurant' && <p>Cuisine: {item.cuisine}</p>}
-      {item.type === 'park' && <p>Amenities: {item.amenities.join(', ')}</p>}
-    </div>
-  );
+    return (
+        <div className="list-item">
+            <h3 className="item-name">{item.name}</h3>
+            <p>Type: {item.type}</p>
+            <p>location: {item.location}</p>
+             <hr className="divider" />
+        </div>
+    );
 }
 
 export default ListItem;
