@@ -18,9 +18,7 @@ app.use(express.json());
 
 // List of valid place types from the Google Places API
 const validPlaceTypes = [
-    "accounting", "administrative_area_level_1", "administrative_area_level_2", "administrative_area_level_3",
-    "administrative_area_level_4", "administrative_area_level_5", "administrative_area_level_6",
-    "administrative_area_level_7", "airport", "amusement_park", "aquarium", "art_gallery", "atm", "bakery",
+    "airport", "amusement_park", "aquarium", "art_gallery", "atm", "bakery",
     "bank", "bar", "beauty_salon", "bicycle_store", "book_store", "bowling_alley", "bus_station", "cafe",
     "campground", "car_dealer", "car_rental", "car_repair", "car_wash", "casino", "cemetery", "church",
     "city_hall", "clothing_store", "convenience_store", "courthouse", "dentist", "department_store",
