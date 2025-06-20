@@ -1,33 +1,15 @@
-// src/types.ts
-
-export interface Restaurant {
+// shared/types.ts
+export interface DataItem {
     name: string;
-    location?: string | null;
-    cuisine?: string;
-    rating?: number | null;
-    priceRange?: string | null;
-    openingHours?: string;
-    type: string; // Change from z.literal('restaurant') to generic string
+    formattedAddress?: string; //Address of the place
+    primaryType?: string; // Primary type of the place
+    types?: string[]; //Other types of the place
+    websiteUri?: string; // The Website URL of the place
+    rating?: number; // The rating of the place
+    userRatingCount?: number; // How many people rated the place
+    location?: {  // Keep a generic location object
+        latitude: number;
+        longitude: number;
+    };
+    // Add other common properties here based on your field mask
 }
-
-export interface Park {
-    name: string;
-    location?: string;
-    amenities?: string[];
-    size?: string;
-    openingHours?: string;
-    type: string;
-}
-
-export interface Event {
-    name: string;
-    location?: string;
-    date?: string;
-    time?: string;
-    description?: string;
-    category?: string;
-    price?: number | null;
-    type: string;
-}
-
-export type DataItem = Restaurant | Park | Event;
