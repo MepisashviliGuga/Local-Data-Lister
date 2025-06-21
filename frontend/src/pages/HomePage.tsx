@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { DataItem } from "../../../shared/types";
 import SearchFilter from "../components/SearchFilter";
+import { ListItemSkeleton } from "../components/ListItemSkeleton";
 import DataList from "../components/DataList";
 
 // Zod schemas
@@ -157,9 +158,34 @@ function HomePage() {
     <div className="home-page">
       <h1 className="app-title">Local Data Lister</h1>
 
-      <SearchFilter onSearch={handleSearch} isLoading={isLoading || locationLoading} />
+      <SearchFilter
+        onSearch={handleSearch}
+        isLoading={isLoading || locationLoading}
+      />
 
       <hr className="divider" />
+
+      {locationLoading && (
+        <p className="loading-message" role="status" aria-live="polite">
+          Getting your location...
+        </p>
+      )}
+
+      {/* This is the new part */}
+      {isLoading && (
+        <div className="data-list">
+          {/* Render 5 skeletons to match the API's top 5 results */}
+          {Array.from({ length: 5 }).map((_, index) => (
+            <ListItemSkeleton key={index} />
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <p className="error-message" role="alert" aria-live="assertive">
+          Error: {error}
+        </p>
+      )}
 
       {locationLoading && (
         <p className="loading-message">Getting your location...</p>
