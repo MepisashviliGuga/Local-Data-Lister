@@ -148,13 +148,13 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 3.1 Core Features (Guga)
 
-- [ ] Implement data display
-- [ ] Add search functionality
-- [ ] Implement filtering
-- [ ] Add sorting options
-- [ ] Implement pagination
+- [X] Implement data display
+- [X] Add search functionality
+- [X] Implement filtering
+- [X] Add sorting options
+- [X] Implement pagination
 
-### 3.2 User Interface (Dato)
+### 3.2 User Interface (Giorgi)
 
 - [ ] Design responsive layout
 - [ ] Implement loading states
@@ -178,14 +178,14 @@ A data-driven application that displays local information (restaurants, parks, e
 - [ ] Create data model documentation
 - [ ] Document testing strategy
 
-### 4.2 User Documentation (Giorgi)
+### 4.2 User Documentation (Dato)
 
 - [ ] Create user guide
 - [ ] Write installation instructions
 - [ ] Document deployment process
 - [ ] Create troubleshooting guide
 
-### 4.3 Development Documentation (Dato)
+### 4.3 Development Documentation (Giorgi)
 
 - [ ] Document development setup
 - [ ] Create contribution guidelines
