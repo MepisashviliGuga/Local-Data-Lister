@@ -719,3 +719,113 @@ button:active {
     transform: translateY(0);
   }
 }
+
+/* Keyboard Navigation Styles */
+.list-item-selected {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.3), var(--shadow-xl) !important;
+  transform: translateY(-4px) scale(1.02) !important;
+}
+
+.list-item-selected::before {
+  height: 6px !important;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--secondary-color),
+    var(--accent-color),
+    var(--primary-color)
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: gradientSlide 2s ease infinite !important;
+}
+
+/* Search Help Styles */
+.search-help {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  margin-top: var(--space-2);
+  font-style: italic;
+  text-align: center;
+}
+
+/* No Results Styles */
+.no-results {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--text-secondary);
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--border-radius-lg);
+  border: 1px dashed var(--surface-tertiary);
+}
+
+/* Focus Styles for Accessibility */
+.list-item:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.search-filter input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1), var(--shadow-lg);
+}
+
+/* Animation for list items */
+@keyframes item-cascade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Performance optimizations */
+.list-item {
+  will-change: transform, box-shadow;
+  contain: layout style paint;
+}
+
+.data-list {
+  contain: layout style;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .list-item {
+    border: 2px solid var(--text-primary);
+  }
+
+  .list-item-selected {
+    border-color: var(--primary-color);
+    background: rgba(30, 58, 138, 0.1);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .list-item {
+    animation: none;
+    transition: none;
+  }
+
+  .list-item:hover {
+    transform: none;
+  }
+
+  .list-item-selected {
+    transform: none;
+  }
+
+  .toast {
+    animation: none;
+  }
+
+  button::before {
+    animation: none;
+  }
+}
