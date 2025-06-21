@@ -156,18 +156,18 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 3.2 User Interface (Giorgi)
 
-- [ ] Design responsive layout
-- [ ] Implement loading states
-- [ ] Add error handling UI
-- [ ] Implement accessibility features
-- [ ] Add animations and transitions
+- [X] Design responsive layout
+- [X] Implement loading states
+- [X] Add error handling UI
+- [X] Implement accessibility features
+- [X] Add animations and transitions
 
 ### 3.3 User Experience (Giorgi)
 
-- [ ] Implement user feedback
-- [ ] Add keyboard navigation
-- [ ] Optimize performance
-- [ ] Implement progressive loading
+- [X] Implement user feedback
+- [X] Add keyboard navigation
+- [X] Optimize performance
+- [X] Implement progressive loading
 
 ## 4. Documentation & Technical Decisions (80 pts - 18%)
 
