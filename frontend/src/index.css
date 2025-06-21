@@ -10,7 +10,7 @@
   --success-color: #059669;
   --warning-color: #d97706;
   --danger-color: #dc2626;
-  
+
   /* Sophisticated Neutral Colors */
   --background-primary: #0f172a;
   --background-secondary: #1e293b;
@@ -18,28 +18,31 @@
   --surface-primary: #f8fafc;
   --surface-secondary: #f1f5f9;
   --surface-tertiary: #e2e8f0;
-  
+
   --text-primary: #1e293b;
   --text-secondary: #475569;
   --text-tertiary: #64748b;
   --text-light: #94a3b8;
   --text-white: #ffffff;
-  
+
   /* Enhanced Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.3);
-  
+
   /* Modern Borders */
   --border-radius-sm: 6px;
   --border-radius-md: 12px;
   --border-radius-lg: 16px;
   --border-radius-xl: 24px;
   --border-radius-2xl: 32px;
-  
+
   /* Consistent Spacing */
   --space-unit: 1rem;
   --space-px: 1px;
@@ -56,9 +59,10 @@
   --space-16: 4rem;
   --space-20: 5rem;
   --space-24: 6rem;
-  
+
   /* Typography Scale */
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
   line-height: 1.6;
   font-weight: 400;
   text-rendering: optimizeLegibility;
@@ -92,22 +96,34 @@ body {
 
 /* Animated background pattern */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(30, 58, 138, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(55, 65, 81, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 80%, rgba(71, 85, 105, 0.1) 0%, transparent 50%);
+  background: radial-gradient(
+      circle at 20% 50%,
+      rgba(30, 58, 138, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(55, 65, 81, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(71, 85, 105, 0.1) 0%,
+      transparent 50%
+    );
   z-index: -1;
   animation: backgroundFloat 20s ease-in-out infinite;
 }
 
 @keyframes backgroundFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
   50% {
@@ -116,7 +132,12 @@ body::before {
 }
 
 /* Professional Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: var(--space-4);
@@ -126,7 +147,11 @@ h1, h2, h3, h4, h5, h6 {
 
 h1 {
   font-size: clamp(2.5rem, 5vw, 4rem);
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -151,13 +176,17 @@ a {
 }
 
 a::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 0;
   height: 2px;
   bottom: -2px;
   left: 50%;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
   transition: all 0.3s ease;
   transform: translateX(-50%);
 }
@@ -176,7 +205,11 @@ button {
   font-size: 1rem;
   font-weight: 600;
   font-family: inherit;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--primary-light)
+  );
   color: white;
   border-radius: var(--border-radius-lg);
   cursor: pointer;
@@ -188,13 +221,18 @@ button {
 }
 
 button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -243,7 +281,8 @@ button:active {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -264,7 +303,7 @@ button:active {
   html {
     font-size: 14px;
   }
-  
+
   .container {
     padding: 0 var(--space-4);
   }
@@ -279,9 +318,7 @@ button:active {
   border: 1px solid rgba(255, 255, 255, 0.2);
   padding: var(--space-12);
   border-radius: var(--border-radius-2xl);
-  box-shadow: 
-    var(--shadow-2xl),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-2xl), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   width: 95%;
   max-width: 1200px;
   margin: var(--space-8) auto;
@@ -291,13 +328,18 @@ button:active {
 }
 
 .home-page::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(37, 99, 235, 0.3),
+    transparent
+  );
 }
 
 .app-title {
@@ -308,7 +350,12 @@ button:active {
   font-weight: 800;
   position: relative;
   padding-bottom: var(--space-6);
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color),
+    var(--accent-color)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -316,14 +363,19 @@ button:active {
 }
 
 .app-title::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 120px;
   height: 4px;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--secondary-color),
+    var(--accent-color)
+  );
   border-radius: var(--border-radius-sm);
   animation: pulse 2s ease-in-out infinite;
 }
@@ -363,9 +415,7 @@ button:active {
 .search-filter input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 
-    0 0 0 4px rgba(30, 58, 138, 0.1),
-    var(--shadow-lg);
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1), var(--shadow-lg);
   background: rgba(255, 255, 255, 0.95);
   transform: translateY(-1px);
 }
@@ -378,11 +428,12 @@ button:active {
 .divider {
   border: none;
   height: 2px;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(30, 58, 138, 0.3), 
-    rgba(55, 65, 81, 0.3), 
-    rgba(71, 85, 105, 0.3), 
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(30, 58, 138, 0.3),
+    rgba(55, 65, 81, 0.3),
+    rgba(71, 85, 105, 0.3),
     transparent
   );
   margin: var(--space-12) 0;
@@ -404,8 +455,9 @@ button:active {
 
 .loading-message {
   color: var(--primary-color);
-  background: linear-gradient(135deg, 
-    rgba(30, 58, 138, 0.1), 
+  background: linear-gradient(
+    135deg,
+    rgba(30, 58, 138, 0.1),
     rgba(55, 65, 81, 0.05)
   );
   animation: pulse 2s ease-in-out infinite;
@@ -413,8 +465,9 @@ button:active {
 
 .error-message {
   color: var(--danger-color);
-  background: linear-gradient(135deg, 
-    rgba(220, 38, 38, 0.1), 
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.1),
     rgba(239, 68, 68, 0.05)
   );
 }
@@ -439,32 +492,40 @@ button:active {
   overflow: hidden;
   cursor: pointer;
   box-shadow: var(--shadow-lg);
+  opacity: 0; /* Start invisible */
+  animation: item-cascade 0.5s ease-out forwards; /* Apply the animation */
+  animation-delay: var(
+    --animation-delay,
+    0s
+  ); /* Use a variable for the delay */
 }
 
 .list-item::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, 
-    var(--primary-color), 
-    var(--secondary-color), 
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--secondary-color),
     var(--accent-color)
   );
   transition: all 0.4s ease;
 }
 
 .list-item::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, 
-    rgba(37, 99, 235, 0.05) 0%, 
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.05) 0%,
     rgba(124, 58, 237, 0.05) 50%,
     rgba(6, 182, 212, 0.05) 100%
   );
@@ -481,9 +542,10 @@ button:active {
 
 .list-item:hover::before {
   height: 6px;
-  background: linear-gradient(90deg, 
-    var(--primary-color), 
-    var(--secondary-color), 
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--secondary-color),
     var(--accent-color),
     var(--primary-color)
   );
@@ -515,7 +577,11 @@ button:active {
   font-weight: 700;
   position: relative;
   letter-spacing: -0.025em;
-  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--text-primary),
+    var(--text-secondary)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -532,7 +598,11 @@ button:active {
   position: absolute;
   top: var(--space-6);
   right: var(--space-6);
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
   color: white;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--border-radius-lg);
@@ -552,7 +622,11 @@ button:active {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
   color: white;
   display: flex;
   align-items: center;
@@ -569,7 +643,11 @@ button:active {
 .fab:hover {
   transform: translateY(-4px) scale(1.1);
   box-shadow: var(--shadow-2xl);
-  background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-dark),
+    var(--secondary-color)
+  );
 }
 
 .fab:active {
@@ -582,7 +660,7 @@ button:active {
     width: 95%;
     padding: var(--space-10);
   }
-  
+
   .data-list {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: var(--space-6);
@@ -595,21 +673,21 @@ button:active {
     padding: var(--space-8);
     margin: var(--space-4) auto;
   }
-  
+
   .app-title {
     font-size: 2.5rem;
     margin-bottom: var(--space-8);
   }
-  
+
   .data-list {
     grid-template-columns: 1fr;
     gap: var(--space-6);
   }
-  
+
   .list-item {
     padding: var(--space-6);
   }
-  
+
   .fab {
     width: 56px;
     height: 56px;
@@ -622,12 +700,132 @@ button:active {
   .home-page {
     padding: var(--space-6);
   }
-  
+
   .search-filter input {
     padding: var(--space-3) var(--space-4);
   }
-  
+
   .list-item {
     padding: var(--space-5);
+  }
+}
+@keyframes item-cascade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Keyboard Navigation Styles */
+.list-item-selected {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.3), var(--shadow-xl) !important;
+  transform: translateY(-4px) scale(1.02) !important;
+}
+
+.list-item-selected::before {
+  height: 6px !important;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--secondary-color),
+    var(--accent-color),
+    var(--primary-color)
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: gradientSlide 2s ease infinite !important;
+}
+
+/* Search Help Styles */
+.search-help {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  margin-top: var(--space-2);
+  font-style: italic;
+  text-align: center;
+}
+
+/* No Results Styles */
+.no-results {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--text-secondary);
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--border-radius-lg);
+  border: 1px dashed var(--surface-tertiary);
+}
+
+/* Focus Styles for Accessibility */
+.list-item:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.search-filter input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1), var(--shadow-lg);
+}
+
+/* Animation for list items */
+@keyframes item-cascade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Performance optimizations */
+.list-item {
+  will-change: transform, box-shadow;
+  contain: layout style paint;
+}
+
+.data-list {
+  contain: layout style;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .list-item {
+    border: 2px solid var(--text-primary);
+  }
+
+  .list-item-selected {
+    border-color: var(--primary-color);
+    background: rgba(30, 58, 138, 0.1);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .list-item {
+    animation: none;
+    transition: none;
+  }
+
+  .list-item:hover {
+    transform: none;
+  }
+
+  .list-item-selected {
+    transform: none;
+  }
+
+  .toast {
+    animation: none;
+  }
+
+  button::before {
+    animation: none;
   }
 }
