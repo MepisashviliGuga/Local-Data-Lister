@@ -16,15 +16,21 @@ interface ToastState {
   isVisible: boolean;
 }
 
+interface LocationCoords {
+  latitude: number;
+  longitude: number;
+}
+
 function HomePage() {
-    const [items, setItems] = useState<DataItem[]>([]);
-    const [filterText, setFilterText] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-    const [locationLoading, setLocationLoading] = useState(true);
-    const [cache, setCache] = useState<Map<string, CacheEntry>>(new Map());
-    const [validPlaceTypes, setValidPlaceTypes] = useState<string[]>([]);
+  const [items, setItems] = useState<DataItem[]>([]);
+  const [filterText, setFilterText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState<LocationCoords | null>(null);
+  const [locationLoading, setLocationLoading] = useState(true);
+  const [cache, setCache] = useState<Map<string, CacheEntry>>(new Map());
+  const [validPlaceTypes, setValidPlaceTypes] = useState<string[]>([]);
+  const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
 
   const cacheExpiryTime = 60 * 60 * 1000;
 
@@ -39,28 +45,31 @@ function HomePage() {
     setToast((prev) => ({ ...prev, isVisible: false }));
   }, []);
 
-    const getCacheKey = (lat: number, lng: number, keyword: string) => {
-        return `nearbyData_${lat}_${lng}_${keyword}`;
-    };
+  const getCacheKey = (lat: number, lng: number, keyword: string) => {
+    return `nearbyData_${lat}_${lng}_${keyword}`;
+  };
 
-    const fetchValidPlaceTypes = useCallback(async () => {
-        try {
-            const response = await fetch('http://localhost:3001/api/nearby');
-            const data = await response.json();
+  const fetchValidPlaceTypes = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/valid-place-types'); // Different url name
+      if (!response.ok) {
+        throw new Error(`Failed to fetch valid place types. Status: ${response.status}`);
+      }
+      const data = await response.json();
 
-            if (data.validTypes && Array.isArray(data.validTypes)) {
-                setValidPlaceTypes(data.validTypes);
-            } else {
-                setError("Failed to load valid place types.");
-            }
-        } catch (error: any) {
-            setError(`Error fetching valid place types: ${error.message}`);
-        }
-    }, []);
+      if (Array.isArray(data)) {
+        setValidPlaceTypes(data);
+      } else {
+        setError("Invalid format for valid place types data.");
+      }
+    } catch (error: any) {
+      setError(`Error fetching valid place types: ${error.message}`);
+    }
+  }, []);
 
-    useEffect(() => {
-        fetchValidPlaceTypes();
-    }, [fetchValidPlaceTypes]);
+  useEffect(() => {
+    fetchValidPlaceTypes();
+  }, [fetchValidPlaceTypes]);
 
   const fetchData = useCallback(
     async (searchKeyword: string) => {
@@ -70,10 +79,10 @@ function HomePage() {
         return;
       }
 
-        if (!searchKeyword.trim()) {
-            setItems([]);
-            return;
-        }
+      if (!searchKeyword.trim()) {
+        setItems([]);
+        return;
+      }
 
       setIsLoading(true);
       setError(null);
@@ -85,28 +94,28 @@ function HomePage() {
         searchKeyword
       );
 
-        const cachedEntry = cache.get(cacheKey);
-        if (cachedEntry && cachedEntry.expiry > now) {
-            console.log("Using cached data for keyword:", searchKeyword);
-            setItems(cachedEntry.data);
-            setIsLoading(false);
-            return;
-        }
+      const cachedEntry = cache.get(cacheKey);
+      if (cachedEntry && cachedEntry.expiry > now) {
+        console.log("Using cached data for keyword:", searchKeyword);
+        setItems(cachedEntry.data);
+        setIsLoading(false);
+        return;
+      }
 
-        try {
-            console.log(`Fetching data for keyword: "${searchKeyword}"`);
+      try {
+        console.log(`Fetching data for keyword: "${searchKeyword}"`);
 
-            const response = await fetch('http://localhost:3001/api/nearby', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    latitude: location.latitude,
-                    longitude: location.longitude,
-                    keyword: searchKeyword
-                })
-            });
+        const response = await fetch('http://localhost:3001/api/nearby', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            keyword: searchKeyword
+          })
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -114,46 +123,26 @@ function HomePage() {
 
         const rawData = await response.json();
 
-            const validatedData: DataItem[] = [];
-            if (Array.isArray(rawData)) {
-                rawData.forEach((item: any) => {
-                    try {
-                        const validatedItem = {
-                            name: item.name,
-                            formattedAddress: item.formattedAddress,
-                            types: item.types,
-                            websiteUri: item.websiteUri,
-                            rating: item.rating,
-                            userRatingCount: item.userRatingCount,
-                            location: item.location
-                        };
-                        validatedData.push(validatedItem);
-                    } catch (err: any) {
-                        console.error("Validation error for item:", item, err.errors);
-                        setError("Data validation failed. Check console for details.");
-                    }
-                });
-            }
+        if (Array.isArray(rawData)) {
+          setItems(rawData);
+          const newCache = new Map(cache);
+          newCache.set(cacheKey, {
+            data: rawData,
+            expiry: now + cacheExpiryTime,
+          });
+          setCache(newCache);
 
-        console.log(
-          `Setting ${validatedData.length} items for keyword: "${searchKeyword}"`
-        );
-        setItems(validatedData);
-
-            const newCache = new Map(cache);
-            newCache.set(cacheKey, {
-                data: validatedData,
-                expiry: now + cacheExpiryTime,
-            });
-            setCache(newCache);
-
-        if (validatedData.length > 0) {
-          showToast(
-            `Found ${validatedData.length} results for "${searchKeyword}"`,
-            "success"
-          );
+          if (rawData.length > 0) {
+            showToast(
+              `Found ${rawData.length} results for "${searchKeyword}"`,
+              "success"
+            );
+          } else {
+            showToast(`No results found for "${searchKeyword}"`, "warning");
+          }
         } else {
-          showToast(`No results found for "${searchKeyword}"`, "warning");
+          setError("Invalid data format received from the API.");
+          showToast("Invalid data format from API", "error");
         }
       } catch (err: any) {
         const errorMessage = err.message || "Failed to fetch data";
@@ -167,37 +156,40 @@ function HomePage() {
     [location, cache, cacheExpiryTime, showToast]
   );
 
-    useEffect(() => {
-        const getLocation = () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        setLocation({
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude,
-                        });
-                        setLocationLoading(false);
-                    },
-                    (error) => {
-                        setError(`Error getting location: ${error.message}`);
-                        setLocationLoading(false);
-                    }
-                );
-            } else {
-                setError("Geolocation is not supported by this browser.");
-                setLocationLoading(false);
-            }
-        };
-        getLocation();
-    }, []);
+  useEffect(() => {
+    const getLocation = () => {
+      setLocationLoading(true);
+      setError(null);
 
-  const handleSearch = (searchText: string) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setLocation({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+            setLocationLoading(false);
+          },
+          (error) => {
+            setError(`Error getting location: ${error.message}`);
+            setLocationLoading(false);
+            showToast(`Error getting location: ${error.message}`, "error");
+          }
+        );
+      } else {
+        setError("Geolocation is not supported by this browser.");
+        setLocationLoading(false);
+        showToast("Geolocation not supported", "error");
+      }
+    };
+    getLocation();
+  }, [showToast]);
+
+  const handleSearch = useCallback((searchText: string) => { // Added useCallback
     console.log(`Search initiated for: "${searchText}"`);
     setFilterText(searchText);
-    if (location) {
-      fetchData(searchText);
-    }
-  };
+    fetchData(searchText);
+  }, [fetchData]);
 
   const handleItemSelect = useCallback(
     (item: DataItem, index: number) => {
@@ -213,7 +205,7 @@ function HomePage() {
     <div className="home-page">
       <h1 className="app-title">Local Data Lister</h1>
 
-            <SearchFilter onSearch={handleSearch} validPlaceTypes={validPlaceTypes} />
+      <SearchFilter onSearch={handleSearch} validPlaceTypes={validPlaceTypes} />
 
       <hr className="divider" />
 
@@ -247,9 +239,9 @@ function HomePage() {
             enableKeyboardNavigation={true}
           />
         ) : filterText ? (
-          <p>No items found for "{filterText}". Try a different search term.</p>
+          <p className="no-results">No items found for "{filterText}". Try a different search term.</p>
         ) : (
-          <p>Enter a search term to find nearby places.</p>
+          <p className="search-help">Enter a search term to find nearby places.</p>
         ))}
 
       <Toast
