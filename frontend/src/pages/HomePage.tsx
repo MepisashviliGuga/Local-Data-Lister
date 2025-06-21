@@ -5,18 +5,6 @@ import { ListItemSkeleton } from "../components/ListItemSkeleton";
 import DataList from "../components/DataList";
 import { Toast } from "../components/Toast";
 
-// Zod schemas
-import { z } from "zod";
-
-// Zod schemas for general properties only (name, location, rating, etc.)
-const BaseDataItemSchema = z.object({
-  name: z.string(),
-  location: z.string().nullable(),
-  rating: z.number().nullable(),
-  type: z.string(), // Allow any string for the type
-});
-
-// Cache interface
 interface CacheEntry {
   data: DataItem[];
   expiry: number;
@@ -29,21 +17,14 @@ interface ToastState {
 }
 
 function HomePage() {
-  const [items, setItems] = useState<DataItem[]>([]);
-  const [filterText, setFilterText] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [location, setLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [locationLoading, setLocationLoading] = useState(true);
-  const [cache, setCache] = useState<Map<string, CacheEntry>>(new Map());
-  const [toast, setToast] = useState<ToastState>({
-    message: "",
-    type: "info",
-    isVisible: false,
-  });
+    const [items, setItems] = useState<DataItem[]>([]);
+    const [filterText, setFilterText] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+    const [locationLoading, setLocationLoading] = useState(true);
+    const [cache, setCache] = useState<Map<string, CacheEntry>>(new Map());
+    const [validPlaceTypes, setValidPlaceTypes] = useState<string[]>([]);
 
   const cacheExpiryTime = 60 * 60 * 1000;
 
@@ -58,9 +39,28 @@ function HomePage() {
     setToast((prev) => ({ ...prev, isVisible: false }));
   }, []);
 
-  const getCacheKey = (lat: number, lng: number, keyword: string) => {
-    return `nearbyData_${lat}_${lng}_${keyword}`;
-  };
+    const getCacheKey = (lat: number, lng: number, keyword: string) => {
+        return `nearbyData_${lat}_${lng}_${keyword}`;
+    };
+
+    const fetchValidPlaceTypes = useCallback(async () => {
+        try {
+            const response = await fetch('http://localhost:3001/api/nearby');
+            const data = await response.json();
+
+            if (data.validTypes && Array.isArray(data.validTypes)) {
+                setValidPlaceTypes(data.validTypes);
+            } else {
+                setError("Failed to load valid place types.");
+            }
+        } catch (error: any) {
+            setError(`Error fetching valid place types: ${error.message}`);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchValidPlaceTypes();
+    }, [fetchValidPlaceTypes]);
 
   const fetchData = useCallback(
     async (searchKeyword: string) => {
@@ -70,11 +70,10 @@ function HomePage() {
         return;
       }
 
-      // Don't search if keyword is empty
-      if (!searchKeyword.trim()) {
-        setItems([]);
-        return;
-      }
+        if (!searchKeyword.trim()) {
+            setItems([]);
+            return;
+        }
 
       setIsLoading(true);
       setError(null);
@@ -86,24 +85,28 @@ function HomePage() {
         searchKeyword
       );
 
-      // Check cache
-      const cachedEntry = cache.get(cacheKey);
-      if (cachedEntry && cachedEntry.expiry > now) {
-        console.log("Using cached data for keyword:", searchKeyword);
-        setItems(cachedEntry.data);
-        setIsLoading(false);
-        showToast(
-          `Found ${cachedEntry.data.length} cached results for "${searchKeyword}"`,
-          "info"
-        );
-        return;
-      }
+        const cachedEntry = cache.get(cacheKey);
+        if (cachedEntry && cachedEntry.expiry > now) {
+            console.log("Using cached data for keyword:", searchKeyword);
+            setItems(cachedEntry.data);
+            setIsLoading(false);
+            return;
+        }
 
-      try {
-        console.log(`Fetching data for keyword: "${searchKeyword}"`);
-        const response = await fetch(
-          `http://localhost:3001/api/nearby?latitude=${location.latitude}&longitude=${location.longitude}&keyword=${searchKeyword}`
-        );
+        try {
+            console.log(`Fetching data for keyword: "${searchKeyword}"`);
+
+            const response = await fetch('http://localhost:3001/api/nearby', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                    keyword: searchKeyword
+                })
+            });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -111,32 +114,38 @@ function HomePage() {
 
         const rawData = await response.json();
 
-        // Data Validation
-        const validatedData: DataItem[] = [];
-        if (Array.isArray(rawData)) {
-          rawData.forEach((item: any) => {
-            try {
-              const validatedItem = BaseDataItemSchema.parse(item) as DataItem;
-              validatedData.push(validatedItem);
-            } catch (err: any) {
-              console.error("Validation error for item:", item, err.errors);
-              setError("Data validation failed. Check console for details.");
+            const validatedData: DataItem[] = [];
+            if (Array.isArray(rawData)) {
+                rawData.forEach((item: any) => {
+                    try {
+                        const validatedItem = {
+                            name: item.name,
+                            formattedAddress: item.formattedAddress,
+                            types: item.types,
+                            websiteUri: item.websiteUri,
+                            rating: item.rating,
+                            userRatingCount: item.userRatingCount,
+                            location: item.location
+                        };
+                        validatedData.push(validatedItem);
+                    } catch (err: any) {
+                        console.error("Validation error for item:", item, err.errors);
+                        setError("Data validation failed. Check console for details.");
+                    }
+                });
             }
-          });
-        }
 
         console.log(
           `Setting ${validatedData.length} items for keyword: "${searchKeyword}"`
         );
         setItems(validatedData);
 
-        // Update cache
-        const newCache = new Map(cache);
-        newCache.set(cacheKey, {
-          data: validatedData,
-          expiry: now + cacheExpiryTime,
-        });
-        setCache(newCache);
+            const newCache = new Map(cache);
+            newCache.set(cacheKey, {
+                data: validatedData,
+                expiry: now + cacheExpiryTime,
+            });
+            setCache(newCache);
 
         if (validatedData.length > 0) {
           showToast(
@@ -158,35 +167,29 @@ function HomePage() {
     [location, cache, cacheExpiryTime, showToast]
   );
 
-  // Get user's current location
-  useEffect(() => {
-    const getLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setLocation({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
-            setLocationLoading(false);
-            showToast("Location obtained successfully!", "success");
-          },
-          (error) => {
-            const errorMessage = `Error getting location: ${error.message}`;
-            setError(errorMessage);
-            setLocationLoading(false);
-            showToast(errorMessage, "error");
-          }
-        );
-      } else {
-        const errorMessage = "Geolocation is not supported by this browser.";
-        setError(errorMessage);
-        setLocationLoading(false);
-        showToast(errorMessage, "error");
-      }
-    };
-    getLocation();
-  }, [showToast]);
+    useEffect(() => {
+        const getLocation = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        setLocation({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                        });
+                        setLocationLoading(false);
+                    },
+                    (error) => {
+                        setError(`Error getting location: ${error.message}`);
+                        setLocationLoading(false);
+                    }
+                );
+            } else {
+                setError("Geolocation is not supported by this browser.");
+                setLocationLoading(false);
+            }
+        };
+        getLocation();
+    }, []);
 
   const handleSearch = (searchText: string) => {
     console.log(`Search initiated for: "${searchText}"`);
@@ -210,11 +213,7 @@ function HomePage() {
     <div className="home-page">
       <h1 className="app-title">Local Data Lister</h1>
 
-      <SearchFilter
-        onSearch={handleSearch}
-        isLoading={isLoading || locationLoading}
-        debounceMs={500}
-      />
+            <SearchFilter onSearch={handleSearch} validPlaceTypes={validPlaceTypes} />
 
       <hr className="divider" />
 
