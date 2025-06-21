@@ -148,11 +148,9 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 3.1 Core Features (Guga)
 
-- [ ] Implement data display
-- [ ] Add search functionality
-- [ ] Implement filtering
-- [ ] Add sorting options
-- [ ] Implement pagination
+- [X] Implement data display
+- [X] Add search functionality
+- [X] Implement filtering
 
 ### 3.2 User Interface (Dato)
 
