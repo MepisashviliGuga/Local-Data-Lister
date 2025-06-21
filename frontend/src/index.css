@@ -494,7 +494,10 @@ button:active {
   box-shadow: var(--shadow-lg);
   opacity: 0; /* Start invisible */
   animation: item-cascade 0.5s ease-out forwards; /* Apply the animation */
-  animation-delay: var(--animation-delay, 0s); /* Use a variable for the delay */
+  animation-delay: var(
+    --animation-delay,
+    0s
+  ); /* Use a variable for the delay */
 }
 
 .list-item::before {
