@@ -3,6 +3,7 @@ import { DataItem } from "../../../shared/types";
 import SearchFilter from "../components/SearchFilter";
 import { ListItemSkeleton } from "../components/ListItemSkeleton";
 import DataList from "../components/DataList";
+import { Toast } from "../components/Toast";
 
 // Zod schemas
 import { z } from "zod";
@@ -21,6 +22,12 @@ interface CacheEntry {
   expiry: number;
 }
 
+interface ToastState {
+  message: string;
+  type: "success" | "error" | "info" | "warning";
+  isVisible: boolean;
+}
+
 function HomePage() {
   const [items, setItems] = useState<DataItem[]>([]);
   const [filterText, setFilterText] = useState("");
@@ -32,8 +39,24 @@ function HomePage() {
   } | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [cache, setCache] = useState<Map<string, CacheEntry>>(new Map());
+  const [toast, setToast] = useState<ToastState>({
+    message: "",
+    type: "info",
+    isVisible: false,
+  });
 
   const cacheExpiryTime = 60 * 60 * 1000;
+
+  const showToast = useCallback(
+    (message: string, type: ToastState["type"] = "info") => {
+      setToast({ message, type, isVisible: true });
+    },
+    []
+  );
+
+  const hideToast = useCallback(() => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  }, []);
 
   const getCacheKey = (lat: number, lng: number, keyword: string) => {
     return `nearbyData_${lat}_${lng}_${keyword}`;
@@ -43,6 +66,7 @@ function HomePage() {
     async (searchKeyword: string) => {
       if (!location) {
         setError("Location is required to fetch nearby data.");
+        showToast("Location is required to fetch nearby data.", "error");
         return;
       }
 
@@ -68,6 +92,10 @@ function HomePage() {
         console.log("Using cached data for keyword:", searchKeyword);
         setItems(cachedEntry.data);
         setIsLoading(false);
+        showToast(
+          `Found ${cachedEntry.data.length} cached results for "${searchKeyword}"`,
+          "info"
+        );
         return;
       }
 
@@ -109,14 +137,25 @@ function HomePage() {
           expiry: now + cacheExpiryTime,
         });
         setCache(newCache);
+
+        if (validatedData.length > 0) {
+          showToast(
+            `Found ${validatedData.length} results for "${searchKeyword}"`,
+            "success"
+          );
+        } else {
+          showToast(`No results found for "${searchKeyword}"`, "warning");
+        }
       } catch (err: any) {
-        setError(err.message || "Failed to fetch data");
+        const errorMessage = err.message || "Failed to fetch data";
+        setError(errorMessage);
+        showToast(errorMessage, "error");
         console.error("API data error:", err);
       } finally {
         setIsLoading(false);
       }
     },
-    [location, cache, cacheExpiryTime]
+    [location, cache, cacheExpiryTime, showToast]
   );
 
   // Get user's current location
@@ -130,19 +169,24 @@ function HomePage() {
               longitude: position.coords.longitude,
             });
             setLocationLoading(false);
+            showToast("Location obtained successfully!", "success");
           },
           (error) => {
-            setError(`Error getting location: ${error.message}`);
+            const errorMessage = `Error getting location: ${error.message}`;
+            setError(errorMessage);
             setLocationLoading(false);
+            showToast(errorMessage, "error");
           }
         );
       } else {
-        setError("Geolocation is not supported by this browser.");
+        const errorMessage = "Geolocation is not supported by this browser.";
+        setError(errorMessage);
         setLocationLoading(false);
+        showToast(errorMessage, "error");
       }
     };
     getLocation();
-  }, []);
+  }, [showToast]);
 
   const handleSearch = (searchText: string) => {
     console.log(`Search initiated for: "${searchText}"`);
@@ -151,6 +195,14 @@ function HomePage() {
       fetchData(searchText);
     }
   };
+
+  const handleItemSelect = useCallback(
+    (item: DataItem, index: number) => {
+      showToast(`Selected: ${item.name}`, "info");
+      // You can add more functionality here, like opening a detail view
+    },
+    [showToast]
+  );
 
   const displayItems = items;
 
@@ -161,6 +213,7 @@ function HomePage() {
       <SearchFilter
         onSearch={handleSearch}
         isLoading={isLoading || locationLoading}
+        debounceMs={500}
       />
 
       <hr className="divider" />
@@ -171,10 +224,8 @@ function HomePage() {
         </p>
       )}
 
-      {/* This is the new part */}
       {isLoading && (
         <div className="data-list">
-          {/* Render 5 skeletons to match the API's top 5 results */}
           {Array.from({ length: 5 }).map((_, index) => (
             <ListItemSkeleton key={index} />
           ))}
@@ -187,27 +238,28 @@ function HomePage() {
         </p>
       )}
 
-      {locationLoading && (
-        <p className="loading-message">Getting your location...</p>
-      )}
-      {isLoading && <p className="loading-message">Searching for places...</p>}
-      {error && <p className="error-message">Error: {error}</p>}
+      {!locationLoading &&
+        !isLoading &&
+        !error &&
+        (displayItems.length > 0 ? (
+          <DataList
+            items={displayItems}
+            onItemSelect={handleItemSelect}
+            enableKeyboardNavigation={true}
+          />
+        ) : filterText ? (
+          <p>No items found for "{filterText}". Try a different search term.</p>
+        ) : (
+          <p>Enter a search term to find nearby places.</p>
+        ))}
 
-      {locationLoading && (
-        <p className="loading-message" role="status" aria-live="polite">
-          Getting your location...
-        </p>
-      )}
-      {isLoading && (
-        <p className="loading-message" role="status" aria-live="polite">
-          Searching for places...
-        </p>
-      )}
-      {error && (
-        <p className="error-message" role="alert" aria-live="assertive">
-          Error: {error}
-        </p>
-      )}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+        duration={4000}
+      />
     </div>
   );
 }
