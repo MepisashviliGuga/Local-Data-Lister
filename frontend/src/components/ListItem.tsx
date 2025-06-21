@@ -4,18 +4,46 @@ import { DataItem } from "../../../shared/types";
 
 interface ListItemProps {
   item: DataItem;
-  index: number; // Receive the index as a prop
+  index: number;
+  onClick?: () => void;
+  role?: string;
+  "aria-selected"?: boolean;
+  tabIndex?: number;
+  className?: string;
 }
 
-function ListItem({ item, index }: ListItemProps) {
+function ListItem({
+  item,
+  index,
+  onClick,
+  role,
+  "aria-selected": ariaSelected,
+  tabIndex,
+  className = "",
+}: ListItemProps) {
   // Calculate the delay. Each item will be delayed by 50ms more than the last.
   const animationDelay = `${index * 50}ms`;
 
+  const handleClick = () => {
+    onClick?.();
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onClick?.();
+    }
+  };
+
   return (
     <div
-      className="list-item"
-      // Set the CSS custom property here
+      className={`list-item ${className}`}
       style={{ "--animation-delay": animationDelay } as React.CSSProperties}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role={role}
+      aria-selected={ariaSelected}
+      tabIndex={tabIndex}
     >
       <h3 className="item-name">{item.name}</h3>
       <p>Type: {item.type}</p>
