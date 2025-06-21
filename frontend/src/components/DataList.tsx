@@ -14,6 +14,7 @@ function DataList({ items }: DataListProps) {
         <ListItem
           key={item.name} // Use a more stable key if available, like an ID
           item={item}
+          index={index}
         />
       ))}
     </div>
