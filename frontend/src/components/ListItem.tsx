@@ -1,8 +1,15 @@
-import React from 'react';
-import { DataItem } from '../../../shared/types';
+// frontend/src/components/ListItem.tsx
+import React from "react";
+import { DataItem } from "../../../shared/types";
 
 interface ListItemProps {
-    item: DataItem;
+  item: DataItem;
+  index: number;
+  onClick?: () => void;
+  role?: string;
+  "aria-selected"?: boolean;
+  tabIndex?: number;
+  className?: string;
 }
 
 function ListItem({ item }: ListItemProps) {
@@ -24,3 +31,4 @@ function ListItem({ item }: ListItemProps) {
 }
 
 export default ListItem;
+
