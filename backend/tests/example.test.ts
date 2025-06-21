@@ -34,7 +34,7 @@ describe("Data Model Tests", () => {
     it("should have a non-empty location for every park", () => {
       (testData.parks as Park[]).forEach((park) => {
         expect(typeof park.location).toBe("string");
-        expect(park.location.length).toBeGreaterThan(0);
+        expect(park.location && park.location.length).toBeGreaterThan(0);
       });
     });
 
@@ -136,6 +136,7 @@ describe("Search Tests", () => {
       const searchTerm = "Italian";
       const searchResults = (testData.restaurants as Restaurant[]).filter(
         (restaurant) =>
+          restaurant.cuisine &&
           restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase())
       );
       expect(searchResults.length).toBeGreaterThan(0);
@@ -149,8 +150,10 @@ describe("Search Tests", () => {
     it("should find a park by location", () => {
       // S-003
       const searchTerm = "Downtown";
-      const searchResults = (testData.parks as Park[]).filter((park) =>
-        park.location.toLowerCase().includes(searchTerm.toLowerCase())
+      const searchResults = (testData.parks as Park[]).filter(
+        (park) =>
+          park.location &&
+          park.location.toLowerCase().includes(searchTerm.toLowerCase())
       );
       expect(searchResults.length).toBe(1);
       expect(searchResults[0].name).toBe("Central Park");
