@@ -151,8 +151,13 @@ A data-driven application that displays local information (restaurants, parks, e
 - [X] Implement data display
 - [X] Add search functionality
 - [X] Implement filtering
+<<<<<<< HEAD
+=======
+- [X] Add sorting options
+- [X] Implement pagination
+>>>>>>> a1061626a4fddb17b9910ebdde7a407e0e6e22d5
 
-### 3.2 User Interface (Dato)
+### 3.2 User Interface (Giorgi)
 
 - [ ] Design responsive layout
 - [ ] Implement loading states
@@ -176,14 +181,14 @@ A data-driven application that displays local information (restaurants, parks, e
 - [ ] Create data model documentation
 - [ ] Document testing strategy
 
-### 4.2 User Documentation (Giorgi)
+### 4.2 User Documentation (Dato)
 
 - [ ] Create user guide
 - [ ] Write installation instructions
 - [ ] Document deployment process
 - [ ] Create troubleshooting guide
 
-### 4.3 Development Documentation (Dato)
+### 4.3 Development Documentation (Giorgi)
 
 - [ ] Document development setup
 - [ ] Create contribution guidelines
