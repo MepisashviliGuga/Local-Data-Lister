@@ -157,7 +157,7 @@ function HomePage() {
     <div className="home-page">
       <h1 className="app-title">Local Data Lister</h1>
 
-      <SearchFilter onFilterChange={handleSearch} />
+      <SearchFilter onSearch={handleSearch} isLoading={isLoading || locationLoading} />
 
       <hr className="divider" />
 

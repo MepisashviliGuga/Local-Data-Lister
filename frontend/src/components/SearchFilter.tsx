@@ -1,36 +1,38 @@
 // frontend/src/components/SearchFilter.tsx
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 export interface SearchFilterProps {
-  onFilterChange: (newFilterText: string) => void;
+    onSearch: (newFilterText: string) => void;
+    isLoading: boolean; // Add this new prop
 }
 
-function SearchFilter({ onFilterChange }: SearchFilterProps) {
-  const [inputText, setInputText] = useState("");
+function SearchFilter({ onSearch, isLoading }: SearchFilterProps) {
+    const [inputText, setInputText] = useState('');
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setInputText(value);
-    onFilterChange(value);
-  };
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setInputText(event.target.value);
+    };
 
-  const handleSubmit = () => {
-    onFilterChange(inputText);
-  };
+    const handleSubmit = () => {
+        onSearch(inputText);
+    };
 
-  return (
-    <div className="search-filter">
-      <label htmlFor="search-filter">Filter Items:</label>
-      <input
-        id="search-filter"
-        type="text"
-        placeholder="Type to search..."
-        value={inputText}
-        onChange={handleChange}
-      />
-      <button onClick={handleSubmit}>Search</button>
-    </div>
-  );
+    return (
+        <div className="search-filter">
+            <label htmlFor="search-filter">Filter Items:</label>
+            <input
+                id="search-filter"
+                type="text"
+                placeholder="Type to search..."
+                value={inputText}
+                onChange={handleChange}
+                disabled={isLoading} // Also disable the input
+            />
+            <button onClick={handleSubmit} disabled={isLoading}>
+                {isLoading ? 'Searching...' : 'Search'}
+            </button>
+        </div>
+    );
 }
 
 export default SearchFilter;
