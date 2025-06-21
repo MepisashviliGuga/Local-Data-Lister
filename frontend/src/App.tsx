@@ -6,6 +6,9 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PlaceDetailsPage from './pages/PlaceDetailsPage';
 import FavoritesPage from './pages/FavoritesPage';
+import ProfilePage from './pages/ProfilePage'; // <-- Import
+import UsersListPage from './pages/UsersListPage'; // <-- Import
+import PublicProfilePage from './pages/PublicProfilePage'; // <-- Import
 import { useAuth } from './context/AuthContext';
 
 function App() {
@@ -21,10 +24,16 @@ function App() {
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             {isLoggedIn ? (
               <>
+                {/* vvv ADDED LINKS vvv */}
+                <Link to="/users" style={{ color: 'white', fontWeight: '500', textDecoration: 'none' }}>
+                  Find People
+                </Link>
                 <Link to="/my-favorites" style={{ color: 'white', fontWeight: '500', textDecoration: 'none' }}>
                   My Favorites
                 </Link>
-                <span>Welcome, {user?.email}</span>
+                <Link to="/profile" style={{ color: 'white', fontWeight: '500', textDecoration: 'none' }}>
+                  Welcome, {user?.name || user?.email}
+                </Link>
                 <button onClick={logout} style={{ background: 'var(--danger-color)' }}>Logout</button>
               </>
             ) : (
@@ -42,9 +51,12 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          {/* THE KEY CHANGE IS HERE vvv */}
           <Route path="/place/:googlePlaceId" element={<PlaceDetailsPage />} />
           <Route path="/my-favorites" element={<FavoritesPage />} />
+          {/* vvv ADDED ROUTES vvv */}
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/users" element={<UsersListPage />} />
+          <Route path="/users/:id" element={<PublicProfilePage />} />
         </Routes>
       </main>
     </BrowserRouter>
