@@ -1,12 +1,8 @@
+// frontend/src/pages/HomePage.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { DataItem } from '../../../shared/types';
 import SearchFilter from '../components/SearchFilter';
 import DataList from '../components/DataList';
-
-interface CacheEntry {
-    data: DataItem[];
-    expiry: number;
-}
 
 function HomePage() {
     const [items, setItems] = useState<DataItem[]>([]);
@@ -15,14 +11,7 @@ function HomePage() {
     const [error, setError] = useState<string | null>(null);
     const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
     const [locationLoading, setLocationLoading] = useState(true);
-    const [cache, setCache] = useState<Map<string, CacheEntry>>(new Map());
     const [validPlaceTypes, setValidPlaceTypes] = useState<string[]>([]);
-
-    const cacheExpiryTime = 60 * 60 * 1000;
-
-    const getCacheKey = (lat: number, lng: number, keyword: string) => {
-        return `nearbyData_${lat}_${lng}_${keyword}`;
-    };
 
     const fetchValidPlaceTypes = useCallback(async () => {
         try {
@@ -57,17 +46,6 @@ function HomePage() {
         setIsLoading(true);
         setError(null);
 
-        const now = Date.now();
-        const cacheKey = getCacheKey(location.latitude, location.longitude, searchKeyword);
-
-        const cachedEntry = cache.get(cacheKey);
-        if (cachedEntry && cachedEntry.expiry > now) {
-            console.log("Using cached data for keyword:", searchKeyword);
-            setItems(cachedEntry.data);
-            setIsLoading(false);
-            return;
-        }
-
         try {
             console.log(`Fetching data for keyword: "${searchKeyword}"`);
 
@@ -89,36 +67,7 @@ function HomePage() {
 
             const rawData = await response.json();
 
-            const validatedData: DataItem[] = [];
-            if (Array.isArray(rawData)) {
-                rawData.forEach((item: any) => {
-                    try {
-                        const validatedItem = {
-                            name: item.name,
-                            formattedAddress: item.formattedAddress,
-                            types: item.types,
-                            websiteUri: item.websiteUri,
-                            rating: item.rating,
-                            userRatingCount: item.userRatingCount,
-                            location: item.location
-                        };
-                        validatedData.push(validatedItem);
-                    } catch (err: any) {
-                        console.error("Validation error for item:", item, err.errors);
-                        setError("Data validation failed. Check console for details.");
-                    }
-                });
-            }
-
-            console.log(`Setting ${validatedData.length} items for keyword: "${searchKeyword}"`);
-            setItems(validatedData);
-
-            const newCache = new Map(cache);
-            newCache.set(cacheKey, {
-                data: validatedData,
-                expiry: now + cacheExpiryTime,
-            });
-            setCache(newCache);
+            setItems(rawData);  // Set items directly from response
 
         } catch (err: any) {
             setError(err.message || 'Failed to fetch data');
@@ -126,7 +75,7 @@ function HomePage() {
         } finally {
             setIsLoading(false);
         }
-    }, [location, cache, cacheExpiryTime]);
+    }, [location]);
 
     useEffect(() => {
         const getLocation = () => {
