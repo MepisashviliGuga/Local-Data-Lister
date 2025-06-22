@@ -169,6 +169,12 @@ app.get('/api/nearby', (req: Request, res: Response) => {
     });
 });
 
-app.listen(port, () => {
-    logger.info(`Server running on port ${port}`);
-});
+// Start the server only if this file is run directly (and not during tests)
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(port, () => {
+        logger.info(`Server running on port ${port}`);
+    });
+}
+
+// Export the app so supertest can use it
+export default app;
