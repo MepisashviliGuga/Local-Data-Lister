@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env' });
 
+// Use the main DATABASE_URL (the pooler) for the application
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is not set');
 }

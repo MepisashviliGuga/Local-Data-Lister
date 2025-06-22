@@ -5,6 +5,7 @@ import express, { Request, Response, NextFunction, RequestHandler } from 'expres
 import cors from 'cors';
 import logger from "./logger";
 import fetch, { Headers, RequestInit } from 'node-fetch';
+import authRouter from './auth';
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
 // Enable CORS for all origins during development
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/auth', authRouter);
 
 // List of valid place types from the Google Places API
 const validPlaceTypes = [
