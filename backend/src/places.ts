@@ -1,17 +1,20 @@
+// backend/src/places.ts
 import { Router } from 'express';
 import { db } from './db';
 import { places, userFavorites, comments } from './db/schema';
 import { protect, AuthenticatedRequest } from './auth.middleware';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import logger from './logger';
 
 const router = Router();
 
-// Helper function to find or create a place in our database
-// This prevents duplicate entries for the same location.
 const findOrCreatePlace = async (placeData: any) => {
-    const googlePlaceId = `${placeData.location.latitude},${placeData.location.longitude}`;
-    
+    // Use the more stable ID we create on the frontend/in the /nearby endpoint
+    const googlePlaceId = placeData.googlePlaceId;
+    if (!googlePlaceId) {
+        throw new Error("googlePlaceId is required to find or create a place.");
+    }
+
     let place = await db.query.places.findFirst({
         where: eq(places.googlePlaceId, googlePlaceId),
     });
@@ -26,8 +29,8 @@ const findOrCreatePlace = async (placeData: any) => {
             types: placeData.types,
             userRatingCount: placeData.userRatingCount,
             rating: placeData.rating,
-            latitude: placeData.location.latitude.toString(),
-            longitude: placeData.location.longitude.toString(),
+            latitude: placeData.location?.latitude.toString(),
+            longitude: placeData.location?.longitude.toString(),
         }).returning();
         place = newPlaceResult[0];
     }
@@ -35,10 +38,7 @@ const findOrCreatePlace = async (placeData: any) => {
     return place;
 };
 
-// --- PUBLIC ROUTES ---
-
 // GET /api/places/community-favorites
-// Gets all places that have been favorited by at least one person.
 router.get('/community-favorites', async (req, res) => {
     try {
         const favoritePlaces = await db.selectDistinct({place: places}).from(places)
@@ -52,53 +52,41 @@ router.get('/community-favorites', async (req, res) => {
     }
 });
 
-
-// GET /api/places/:id
-// Gets details for a single place, including its comments.
-router.get('/:id', async (req, res) => {
-    const placeId = parseInt(req.params.id);
+// NEW ENDPOINT
+// GET /api/places/by-google-id/:googlePlaceId
+router.get('/by-google-id/:googlePlaceId', async (req, res) => {
+    const { googlePlaceId } = req.params;
     try {
         const place = await db.query.places.findFirst({
-            where: eq(places.id, placeId),
+            where: eq(places.googlePlaceId, googlePlaceId),
         });
 
-        if (!place) {
-            res.status(404).json({ message: 'Place not found' });
+        if (place) {
+            const placeComments = await db.query.comments.findMany({
+                where: eq(comments.placeId, place.id),
+                with: { author: { columns: { email: true } } },
+                orderBy: (comments, { desc }) => [desc(comments.createdAt)],
+            });
+            res.json({ place, comments: placeComments });
             return;
         }
+        
+        res.status(404).json({ message: 'Place not yet in our database.' });
+        return;
 
-        const placeComments = await db.query.comments.findMany({
-            where: eq(comments.placeId, placeId),
-            with: {
-                author: {
-                    columns: { email: true }
-                }
-            },
-            orderBy: (comments, { desc }) => [desc(comments.createdAt)],
-        });
-
-        res.json({ place, comments: placeComments });
     } catch (error: any) {
-        logger.error(`Error fetching place details: ${error.message}`);
+        logger.error(`Error fetching place by google ID: ${error.message}`);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-
-// --- PROTECTED ROUTES (require login) ---
-
 // GET /api/places/me/favorites
-// Gets all places the current logged-in user has favorited.
 router.get('/me/favorites', protect, async (req: AuthenticatedRequest, res) => {
     const userId = req.user!.userId;
     try {
         const userFavoriteEntries = await db.select({ place: places }).from(userFavorites)
             .innerJoin(places, eq(userFavorites.placeId, places.id))
-            .where(and(
-                eq(userFavorites.userId, userId),
-                eq(userFavorites.isFavorite, true)
-            ));
-
+            .where(and(eq(userFavorites.userId, userId), eq(userFavorites.isFavorite, true)));
         res.json(userFavoriteEntries.map(entry => entry.place));
     } catch (error: any) {
         logger.error(`Error fetching user favorites: ${error.message}`);
@@ -106,17 +94,12 @@ router.get('/me/favorites', protect, async (req: AuthenticatedRequest, res) => {
     }
 });
 
-
 // POST /api/places/favorite
-// Lets a user favorite/unfavorite and rate a place.
 router.post('/favorite', protect, async (req: AuthenticatedRequest, res) => {
     const userId = req.user!.userId;
     const { placeData, isFavorite, rating } = req.body;
-
     try {
         const place = await findOrCreatePlace(placeData);
-
-        // Upsert logic: Update if exists, otherwise insert.
         await db.insert(userFavorites).values({
             userId,
             placeId: place.id,
@@ -126,7 +109,6 @@ router.post('/favorite', protect, async (req: AuthenticatedRequest, res) => {
             target: [userFavorites.userId, userFavorites.placeId],
             set: { isFavorite, rating },
         });
-
         res.status(200).json({ message: 'Preference updated successfully' });
     } catch (error: any) {
         logger.error(`Error updating favorite: ${error.message}`);
@@ -134,33 +116,27 @@ router.post('/favorite', protect, async (req: AuthenticatedRequest, res) => {
     }
 });
 
-// POST /api/places/:id/comments
-// Adds a new comment to a place.
-router.post('/:id/comments', protect, async (req: AuthenticatedRequest, res) => {
+// MODIFIED COMMENT ENDPOINT
+// POST /api/places/comment
+router.post('/comment', protect, async (req: AuthenticatedRequest, res) => {
     const userId = req.user!.userId;
-    const placeId = parseInt(req.params.id);
-    const { content } = req.body;
-
+    const { placeData, content } = req.body;
     if (!content) {
         res.status(400).json({ message: 'Comment content cannot be empty.' });
         return;
     }
-
     try {
+        const place = await findOrCreatePlace(placeData);
         const newCommentResult = await db.insert(comments).values({
             userId,
-            placeId,
+            placeId: place.id,
             content,
         }).returning();
         
-        // Fetch the comment again to include author details
         const newCommentWithAuthor = await db.query.comments.findFirst({
             where: eq(comments.id, newCommentResult[0].id),
-            with: {
-                author: { columns: { email: true }}
-            }
+            with: { author: { columns: { email: true } } }
         });
-
         res.status(201).json(newCommentWithAuthor);
     } catch (error: any) {
         logger.error(`Error adding comment: ${error.message}`);

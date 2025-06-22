@@ -1,10 +1,11 @@
 // backend/src/index.ts
 import * as dotenv from 'dotenv';
-// Alternative approach using RequestHandler type
 import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import cors from 'cors';
 import logger from "./logger";
 import fetch, { Headers, RequestInit } from 'node-fetch';
+
+// Import all the routers
 import authRouter from './auth';
 import placesRouter from './places';
 
@@ -14,10 +15,11 @@ const app = express();
 const port = 3001;
 const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
 
-// Enable CORS for all origins during development
+// --- Middleware Setup ---
 app.use(cors());
 app.use(express.json());
 
+// --- API Routers ---
 app.use('/api/auth', authRouter);
 app.use('/api/places', placesRouter);
 
@@ -41,18 +43,11 @@ const validPlaceTypes = [
     "travel_agency", "university", "veterinary_care", "zoo"
 ];
 
-// In-memory cache
+// --- Caching Logic ---
 interface CacheEntry {
     data: any;
     expiry: number;
 }
-
-interface NearbyRequest {
-  latitude: string;
-  longitude: string;
-  keyword: string;
-}
-
 const cache = new Map<string, CacheEntry>();
 const cacheExpiryTime = 60 * 60 * 1000; // 1 hour
 
@@ -60,7 +55,13 @@ const getCacheKey = (latitude: string, longitude: string, keyword: string) => {
     return `nearbyData_${latitude}_${longitude}_${keyword}`;
 };
 
-// POST route handler using RequestHandler type
+// --- Route Handlers for Google Places API Proxy ---
+interface NearbyRequest {
+  latitude: string;
+  longitude: string;
+  keyword: string;
+}
+
 const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequest>, res: Response): Promise<any> => {
     try {
         const { latitude, longitude, keyword } = req.body;
@@ -76,11 +77,10 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
             return res.status(500).json({ message: 'API key not configured.' });
         }
 
-        // Validate the keyword against the valid place types
         if (keyword && !validPlaceTypes.includes(keyword)) {
             logger.warn(`Invalid place type: ${keyword}`);
             return res.status(400).json({
-                message: `Invalid place type.  Must be one of: ${validPlaceTypes.join(', ')}`,
+                message: `Invalid place type. Must be one of: ${validPlaceTypes.join(', ')}`,
                 validTypes: validPlaceTypes
             });
         }
@@ -97,9 +97,8 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
         logger.info(`Fetching data from Google Places API for ${cacheKey}`);
 
         const url = 'https://places.googleapis.com/v1/places:searchNearby';
-
         const requestBody = {
-            includedTypes: [keyword || "restaurant"], // Default to restaurant if keyword is empty
+            includedTypes: [keyword || "restaurant"],
             maxResultCount: 10,
             locationRestriction: {
                 circle: {
@@ -122,17 +121,8 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
             headers: headers,
             body: JSON.stringify(requestBody)
         };
-
-        // Log the full request details
-        logger.info(`Request URL: ${url}`);
-        logger.info(`Request Body: ${JSON.stringify(requestBody, null, 2)}`);
-        logger.info(`Request Headers: ${JSON.stringify(Object.fromEntries(headers.entries()), null, 2)}`);
-
+        
         const response = await fetch(url, options);
-
-        // Log response details
-        logger.info(`Response Status: ${response.status}`);
-        logger.info(`Response Headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}`);
 
         if (!response.ok) {
             const errorBody = await response.text();
@@ -140,36 +130,35 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
             return res.status(response.status).json({
                 message: `Google Places API error: ${errorBody}`,
                 statusCode: response.status,
-                headers: Object.fromEntries(response.headers.entries())
             });
         }
 
         const data = await response.json();
-
         logger.info(`Raw API Data: ${JSON.stringify(data, null, 2)}`);
 
-        // More detailed logging for debugging
-        logger.info(`Data type: ${typeof data}`);
-        logger.info(`Data keys: ${Object.keys(data || {})}`);
-
-        // Check if data exists and has places array
         if (!data || !data.places || !Array.isArray(data.places)) {
             logger.warn('API returned no results or invalid format');
-            logger.info(`Data structure: ${JSON.stringify(data, null, 2)}`);
             return res.status(200).json([]);
         }
 
-        const transformedResults = data.places.map((place: any) => ({
-            name: place.displayName?.text || 'Unknown',
-            formattedAddress: place.formattedAddress || 'Unknown',
-            types: place.types || [],
-            websiteUri: place.websiteUri || null,
-            rating: place.rating || null,
-            userRatingCount: place.userRatingCount || null,
-            location: place.location || null
-        }));
+        // *** THIS IS THE CRUCIAL MODIFICATION ***
+        // We create our own stable ID to send to the frontend for routing.
+        const transformedResults = data.places.map((place: any) => {
+            const name = place.displayName?.text || 'Unknown';
+            const address = place.formattedAddress || 'Unknown';
+            
+            return {
+                googlePlaceId: `${name}_${address}`, // Create a stable, unique ID
+                name: name,
+                formattedAddress: address,
+                types: place.types || [],
+                websiteUri: place.websiteUri || null,
+                rating: place.rating || null,
+                userRatingCount: place.userRatingCount || null,
+                location: place.location || null
+            };
+        });
 
-        // Store in cache
         cache.set(cacheKey, {
             data: transformedResults,
             expiry: now + cacheExpiryTime,
@@ -186,13 +175,11 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
     }
 };
 
-// GET route handler using RequestHandler type
 const nearbyGetHandler: RequestHandler = (req: Request, res: Response, next: NextFunction): any => {
     try {
         if (!googleApiKey) {
             return res.status(500).json({ message: 'API key not configured' });
         }
-
         return res.json({
             message: 'API key is configured',
             keyPrefix: googleApiKey.substring(0, 10) + '...',
@@ -200,7 +187,6 @@ const nearbyGetHandler: RequestHandler = (req: Request, res: Response, next: Nex
             validTypes: validPlaceTypes
         });
     } catch (error:any) {
-        // Forward the error to the next error handling middleware
         next(error);
     }
 };
@@ -208,13 +194,15 @@ const nearbyGetHandler: RequestHandler = (req: Request, res: Response, next: Nex
 app.post('/api/nearby', nearbyPostHandler);
 app.get('/api/nearby', nearbyGetHandler);
 
-// Centralized error handling middleware
+
+// --- Centralized Error Handling ---
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     logger.error(`Unhandled error: ${err.message}`);
     logger.error(`Error stack: ${err.stack}`);
     res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
+// --- Start the Server ---
 app.listen(port, () => {
     logger.info(`Server running on port ${port}`);
 });
