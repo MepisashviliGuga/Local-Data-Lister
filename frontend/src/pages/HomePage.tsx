@@ -4,7 +4,20 @@ import { DataItem } from '../../../shared/types';
 import SearchFilter from '../components/SearchFilter';
 import DataList from '../components/DataList';
 
+// --- NEW IMPORTS ---
+import { useAuth } from '../context/AuthContext'; // To check login status
+import { useNavigate } from 'react-router-dom'; // To redirect the user
+import { Toast } from '../components/Toast'; // For user feedback
+
 function HomePage() {
+    // --- AUTHENTICATION HOOKS ---
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
+
+    // --- TOAST STATE ---
+    const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' as 'info' | 'success' | 'error' | 'warning' });
+
+    // Existing states
     const [items, setItems] = useState<DataItem[]>([]);
     const [filterText, setFilterText] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -12,6 +25,8 @@ function HomePage() {
     const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
     const [locationLoading, setLocationLoading] = useState(true);
     const [validPlaceTypes, setValidPlaceTypes] = useState<string[]>([]);
+    
+    // ... (keep fetchValidPlaceTypes, useEffect for location, etc. They are all fine)
 
     const fetchValidPlaceTypes = useCallback(async () => {
         try {
@@ -47,13 +62,9 @@ function HomePage() {
         setError(null);
 
         try {
-            console.log(`Fetching data for keyword: "${searchKeyword}"`);
-
             const response = await fetch('http://localhost:3001/api/nearby', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     latitude: location.latitude,
                     longitude: location.longitude,
@@ -62,16 +73,15 @@ function HomePage() {
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
 
             const rawData = await response.json();
-
-            setItems(rawData);  // Set items directly from response
-
+            setItems(rawData);
         } catch (err: any) {
             setError(err.message || 'Failed to fetch data');
-            console.error("API data error:", err);
+            setItems([]); // Clear previous results on error
         } finally {
             setIsLoading(false);
         }
@@ -101,7 +111,21 @@ function HomePage() {
         getLocation();
     }, []);
 
+
+    // --- MODIFIED handleSearch FUNCTION ---
     const handleSearch = (searchText: string) => {
+        // 1. Check if user is logged in
+        if (!isLoggedIn) {
+            // Show a toast notification
+            setToast({ isVisible: true, message: 'Please log in to search for places.', type: 'warning' });
+            // Optional: redirect to login page after a short delay
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
+            return; // Stop the function here
+        }
+
+        // 2. If logged in, proceed with the search
         console.log(`Search initiated for: "${searchText}"`);
         setFilterText(searchText);
         if (location) {
@@ -113,6 +137,14 @@ function HomePage() {
 
     return (
         <div className="home-page">
+            {/* --- RENDER THE TOAST COMPONENT --- */}
+            <Toast 
+                isVisible={toast.isVisible}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, isVisible: false })}
+            />
+
             <h1 className="app-title">Local Data Lister</h1>
 
             <SearchFilter onSearch={handleSearch} validPlaceTypes={validPlaceTypes} />
@@ -120,17 +152,30 @@ function HomePage() {
             <hr className="divider" />
 
             {locationLoading && <p className="loading-message">Getting your location...</p>}
-            {isLoading && <p className="loading-message">Searching for places...</p>}
-            {error && <p className="error-message">Error: {error}</p>}
+            
+            {/* Show a clear message to unauthenticated users */}
+            {!isLoggedIn && !locationLoading && (
+                <p style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>
+                    Welcome! Please log in or register to start searching for nearby places.
+                </p>
+            )}
+            
+            {/* Only show search-related content if the user is logged in */}
+            {isLoggedIn && (
+                <>
+                    {isLoading && <p className="loading-message">Searching for places...</p>}
+                    {error && <p className="error-message">Error: {error}</p>}
 
-            {!locationLoading && !isLoading && !error && (
-                displayItems.length > 0 ? (
-                    <DataList items={displayItems} />
-                ) : filterText ? (
-                    <p>No items found for "{filterText}". Try a different search term.</p>
-                ) : (
-                    <p>Enter a search term to find nearby places.</p>
-                )
+                    {!isLoading && !error && (
+                        displayItems.length > 0 ? (
+                            <DataList items={displayItems} />
+                        ) : filterText ? (
+                            <p>No items found for "{filterText}". Try a different search term.</p>
+                        ) : (
+                            <p>Select a place type and click Search to find nearby places.</p>
+                        )
+                    )}
+                </>
             )}
         </div>
     );
