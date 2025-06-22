@@ -1,12 +1,15 @@
+// frontend/src/App.tsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import { useAuth } from './context/AuthContext'; // Import the hook
+import PlaceDetailsPage from './pages/PlaceDetailsPage';
+import FavoritesPage from './pages/FavoritesPage';
+import { useAuth } from './context/AuthContext';
 
 function App() {
-  const { isLoggedIn, logout, user } = useAuth(); // Use the context
+  const { isLoggedIn, logout, user } = useAuth();
 
   return (
     <BrowserRouter>
@@ -17,13 +20,14 @@ function App() {
           </Link>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             {isLoggedIn ? (
-              // If the user is logged in, show their email and a logout button
               <>
+                <Link to="/my-favorites" style={{ color: 'white', fontWeight: '500', textDecoration: 'none' }}>
+                  My Favorites
+                </Link>
                 <span>Welcome, {user?.email}</span>
                 <button onClick={logout} style={{ background: 'var(--danger-color)' }}>Logout</button>
               </>
             ) : (
-              // If not logged in, show login and register buttons
               <>
                 <Link to="/login"><button>Login</button></Link>
                 <Link to="/register"><button style={{ background: 'var(--success-color)' }}>Register</button></Link>
@@ -38,6 +42,9 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          {/* THE KEY CHANGE IS HERE vvv */}
+          <Route path="/place/:googlePlaceId" element={<PlaceDetailsPage />} />
+          <Route path="/my-favorites" element={<FavoritesPage />} />
         </Routes>
       </main>
     </BrowserRouter>

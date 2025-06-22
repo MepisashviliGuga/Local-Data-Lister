@@ -1,15 +1,16 @@
 // shared/types.ts
 export interface DataItem {
+    id?: number; // Our DB id is optional now
+    googlePlaceId: string; // The new stable ID for routing
     name: string;
-    formattedAddress?: string; //Address of the place
-    primaryType?: string; // Primary type of the place
-    types?: string[]; //Other types of the place
-    websiteUri?: string; // The Website URL of the place
-    rating?: number; // The rating of the place
-    userRatingCount?: number; // How many people rated the place
-    location?: {  // Keep a generic location object
+    formattedAddress?: string;
+    primaryType?: string;
+    types?: string[];
+    websiteUri?: string;
+    rating?: number;
+    userRatingCount?: number;
+    location?: {
         latitude: number;
         longitude: number;
     };
-    // Add other common properties here based on your field mask
 }
