@@ -1,5 +1,8 @@
 // backend/src/index.ts
 import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import cors from 'cors';
 import logger from "./logger";
@@ -8,8 +11,6 @@ import fetch, { Headers, RequestInit } from 'node-fetch';
 // Import all the routers
 import authRouter from './auth';
 import placesRouter from './places';
-
-dotenv.config();
 
 const app = express();
 const port = 3001;

@@ -16,7 +16,7 @@ interface Comment {
 function PlaceDetailsPage() {
     const { googlePlaceId } = useParams<{ googlePlaceId: string }>();
     const { state } = useLocation();
-    const { isLoggedIn, token } = useAuth();
+    const { isLoggedIn, token, logout } = useAuth();
 
     const [initialPlaceData, setInitialPlaceData] = useState<DataItem | null>(state?.place || null);
     const [dbPlace, setDbPlace] = useState<DataItem | null>(null);
@@ -47,14 +47,8 @@ function PlaceDetailsPage() {
     }, [googlePlaceId]);
 
     useEffect(() => {
-        // If we don't have the initial data (e.g., user refreshed the page),
-        // we should try to fetch it. This is a more advanced case, but for now
-        // we rely on the state being passed from the Link.
         if (!initialPlaceData && googlePlaceId) {
-            // In a real app, you might have another endpoint to get Google's data by ID.
-            // For now, we'll log a warning. The page might look sparse but interactions will work.
             console.warn("No initial place data. Page was likely reloaded directly.");
-            // We create a minimal initialPlaceData object so interactions can work.
             setInitialPlaceData({ googlePlaceId: decodeURIComponent(googlePlaceId), name: "Loading..." });
         }
         fetchDetails();
@@ -65,63 +59,91 @@ function PlaceDetailsPage() {
             alert("Please log in to perform this action.");
             return null;
         }
-        try {
-            const response = await fetch(`http://localhost:3001/api/places/${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "An unknown error occurred.");
-            }
-            return response.json();
-        } catch (error) {
-            console.error(`Failed to ${endpoint}`, error);
-            alert(`An error occurred: ${(error as Error).message}`);
-            return null;
+        
+        console.log(`[DEBUG] Making request to '${endpoint}'. Sending token:`, token);
+        
+        const response = await fetch(`http://localhost:3001/api/places/${endpoint}`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(body),
+        });
+
+        // --- THIS IS THE CORRECTED LOGIC ---
+        // Handle the 401 Unauthorized case FIRST.
+        if (response.status === 401) {
+            logout();
+            alert("Your session has expired. Please log in again.");
+            // We throw an error here to be caught by the calling function's catch block,
+            // preventing it from trying to process a null response.
+            // This also prevents the generic error alert below from firing.
+            throw new Error("Session expired"); 
         }
+        
+        // Handle all other non-ok responses.
+        if (!response.ok) {
+            const errorData = await response.json();
+            // This will be caught by the catch block in the calling function (handleFavorite, etc.)
+            throw new Error(errorData.message || "An unknown server error occurred.");
+        }
+        
+        // If everything was ok, return the JSON data.
+        return response.json();
     };
 
     const handleCommentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newComment.trim()) return;
         
-        // --- FIX IS HERE ---
-        // Construct the placeData object explicitly to ensure googlePlaceId is included.
-        const placePayload = {
-            ...initialPlaceData,
-            googlePlaceId: decodeURIComponent(googlePlaceId!), // Always use the ID from the URL
-        };
-        
-        const addedComment = await handleInteraction('comment', {
-             placeData: placePayload,
-             content: newComment 
-        });
+        try {
+            const placePayload = {
+                ...initialPlaceData,
+                googlePlaceId: decodeURIComponent(googlePlaceId!),
+            };
+            
+            const addedComment = await handleInteraction('comment', {
+                 placeData: placePayload,
+                 content: newComment 
+            });
 
-        if (addedComment) {
-            setComments([addedComment, ...comments]);
-            setNewComment('');
-            if (!dbPlace) fetchDetails();
+            if (addedComment) {
+                setComments([addedComment, ...comments]);
+                setNewComment('');
+                if (!dbPlace) fetchDetails();
+            }
+        } catch (error) {
+            // The catch block is now simpler. It only catches real errors or our 'Session expired' error.
+            // We can choose to not show an alert for the session expiry since we already did.
+            if ((error as Error).message !== "Session expired") {
+                alert(`Error: ${(error as Error).message}`);
+            }
+            console.error(error);
         }
     };
     
     const handleFavorite = async () => {
-        // --- FIX IS HERE ---
-        // Construct the placeData object explicitly to ensure googlePlaceId is included.
-        const placePayload = {
-            ...initialPlaceData,
-            googlePlaceId: decodeURIComponent(googlePlaceId!), // Always use the ID from the URL
-        };
+        try {
+            const placePayload = {
+                ...initialPlaceData,
+                googlePlaceId: decodeURIComponent(googlePlaceId!),
+            };
 
-        const result = await handleInteraction('favorite', {
-            placeData: placePayload,
-            isFavorite: true 
-        });
+            const result = await handleInteraction('favorite', {
+                placeData: placePayload,
+                isFavorite: true 
+            });
 
-        if (result) {
-            alert(`${initialPlaceData?.name} has been added to your favorites!`);
-            if (!dbPlace) fetchDetails();
+            if (result) {
+                alert(`${initialPlaceData?.name} has been added to your favorites!`);
+                if (!dbPlace) fetchDetails();
+            }
+        } catch (error) {
+            if ((error as Error).message !== "Session expired") {
+                alert(`Error: ${(error as Error).message}`);
+            }
+            console.error(error);
         }
     };
 

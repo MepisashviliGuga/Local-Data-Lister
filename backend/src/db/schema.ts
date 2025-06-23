@@ -1,5 +1,5 @@
 // backend/src/db/schema.ts
-import { pgTable, serial, text, timestamp, uniqueIndex, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, uniqueIndex, integer, boolean, real } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
@@ -17,7 +17,7 @@ export const places = pgTable('places', {
     websiteUri: text('website_uri'),
     types: text('types').array(),
     userRatingCount: integer('user_rating_count'),
-    rating: integer('rating'),
+    rating: real('rating'),
     latitude: text('latitude'),
     longitude: text('longitude'),
 }, (table) => {

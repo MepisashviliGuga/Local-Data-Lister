@@ -15,6 +15,13 @@
       "when": 1750630551904,
       "tag": "0001_freezing_blur",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750675111952,
+      "tag": "0002_dizzy_tigra",
+      "breakpoints": true
     }
   ]
 }
