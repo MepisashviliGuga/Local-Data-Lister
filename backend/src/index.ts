@@ -11,6 +11,7 @@ import fetch, { Headers, RequestInit } from 'node-fetch';
 // Import all the routers
 import authRouter from './auth';
 import placesRouter from './places';
+import usersRouter from './users';
 
 const app = express();
 const port = 3001;
@@ -23,6 +24,7 @@ app.use(express.json());
 // --- API Routers ---
 app.use('/api/auth', authRouter);
 app.use('/api/places', placesRouter);
+app.use('/api/users', usersRouter);
 
 // List of valid place types from the Google Places API
 const validPlaceTypes = [

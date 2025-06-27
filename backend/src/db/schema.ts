@@ -4,10 +4,12 @@ import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
+  name: text('name'), // <-- ADD THIS LINE
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
 
 export const places = pgTable('places', {
     id: serial('id').primaryKey(),
