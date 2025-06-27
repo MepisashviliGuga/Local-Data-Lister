@@ -169,7 +169,7 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ## 4. Documentation & Technical Decisions (80 pts - 18%)
 
-### 4.1 Technical Documentation (Guga)
+### 4.1 Technical Documentation (Giorgi)
 
 - [ ] Create API documentation
 - [ ] Document component structure
@@ -185,10 +185,10 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 4.3 Development Documentation (Giorgi)
 
-- [ ] Document development setup
-- [ ] Create contribution guidelines
-- [ ] Document coding standards
-- [ ] Create architecture diagrams
+- [X] Document development setup
+- [X] Create contribution guidelines
+- [X] Document coding standards
+- [X] Create architecture diagrams
 
 ## 5. Deployment & DevOps (50 pts - 11%)
 
