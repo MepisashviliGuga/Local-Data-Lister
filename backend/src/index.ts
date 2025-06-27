@@ -12,6 +12,7 @@ import fetch, { Headers, RequestInit } from 'node-fetch';
 import authRouter from './auth';
 import placesRouter from './places';
 import usersRouter from './users';
+import notificationsRouter from './notifications';
 
 const app = express();
 const port = 3001;
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/api/places', placesRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/notifications', notificationsRouter);
 
 // List of valid place types from the Google Places API
 const validPlaceTypes = [
@@ -144,14 +146,12 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
             return res.status(200).json([]);
         }
 
-        // *** THIS IS THE CRUCIAL MODIFICATION ***
-        // We create our own stable ID to send to the frontend for routing.
         const transformedResults = data.places.map((place: any) => {
             const name = place.displayName?.text || 'Unknown';
             const address = place.formattedAddress || 'Unknown';
             
             return {
-                googlePlaceId: `${name}_${address}`, // Create a stable, unique ID
+                googlePlaceId: `${name}_${address}`,
                 name: name,
                 formattedAddress: address,
                 types: place.types || [],

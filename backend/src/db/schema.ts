@@ -4,12 +4,11 @@ import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  name: text('name'), // <-- ADD THIS LINE
+  name: text('name'),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
-
 
 export const places = pgTable('places', {
     id: serial('id').primaryKey(),
@@ -41,17 +40,47 @@ export const userFavorites = pgTable('user_favorites', {
     };
 });
 
+// === MODIFIED comments TABLE ===
 export const comments = pgTable('comments', {
     id: serial('id').primaryKey(),
     content: text('content').notNull(),
     userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
     placeId: integer('place_id').notNull().references(() => places.id, { onDelete: 'cascade' }),
+    parentId: integer('parent_id').references((): any => comments.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-export const commentsRelations = relations(comments, ({ one }) => ({
+// === MODIFIED commentsRelations ===
+export const commentsRelations = relations(comments, ({ one, many }) => ({
 	author: one(users, {
 		fields: [comments.userId],
 		references: [users.id],
 	}),
+    place: one(places, {
+        fields: [comments.placeId],
+        references: [places.id],
+    }),
+    replies: many(comments, { relationName: 'comment_replies' }),
+}));
+
+// === NEW notifications TABLE ===
+export const notifications = pgTable('notifications', {
+    id: serial('id').primaryKey(),
+    recipientId: integer('recipient_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    senderId: integer('sender_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    commentId: integer('comment_id').references(() => comments.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(), // e.g., 'REPLY'
+    isRead: boolean('is_read').default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+    sender: one(users, {
+        fields: [notifications.senderId],
+        references: [users.id],
+    }),
+    comment: one(comments, {
+        fields: [notifications.commentId],
+        references: [comments.id],
+    }),
 }));

@@ -6,10 +6,11 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PlaceDetailsPage from './pages/PlaceDetailsPage';
 import FavoritesPage from './pages/FavoritesPage';
-import ProfilePage from './pages/ProfilePage'; // <-- Import
-import UsersListPage from './pages/UsersListPage'; // <-- Import
-import PublicProfilePage from './pages/PublicProfilePage'; // <-- Import
+import ProfilePage from './pages/ProfilePage';
+import UsersListPage from './pages/UsersListPage';
+import PublicProfilePage from './pages/PublicProfilePage';
 import { useAuth } from './context/AuthContext';
+import NotificationBell from './components/NotificationBell';
 
 function App() {
   const { isLoggedIn, logout, user } = useAuth();
@@ -24,7 +25,7 @@ function App() {
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             {isLoggedIn ? (
               <>
-                {/* vvv ADDED LINKS vvv */}
+                <NotificationBell />
                 <Link to="/users" style={{ color: 'white', fontWeight: '500', textDecoration: 'none' }}>
                   Find People
                 </Link>
@@ -53,7 +54,6 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/place/:googlePlaceId" element={<PlaceDetailsPage />} />
           <Route path="/my-favorites" element={<FavoritesPage />} />
-          {/* vvv ADDED ROUTES vvv */}
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/users" element={<UsersListPage />} />
           <Route path="/users/:id" element={<PublicProfilePage />} />
