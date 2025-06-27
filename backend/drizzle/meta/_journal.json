@@ -29,6 +29,13 @@
       "when": 1751028532179,
       "tag": "0003_warm_gauntlet",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1751030321286,
+      "tag": "0004_boring_psynapse",
+      "breakpoints": true
     }
   ]
 }

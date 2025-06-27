@@ -2,21 +2,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { DataItem } from '../../../shared/types';
-
-interface Comment {
-    id: number;
-    content: string;
-    createdAt: string;
-    author: {
-        email: string;
-    };
-}
+import { DataItem, Comment } from '../../../shared/types';
+import CommentItem from '../components/CommentItem'; // Import new component
 
 function PlaceDetailsPage() {
     const { googlePlaceId } = useParams<{ googlePlaceId: string }>();
     const { state } = useLocation();
-    const { isLoggedIn, token, logout } = useAuth();
+    const { isLoggedIn, token, logout, user } = useAuth();
 
     const [initialPlaceData, setInitialPlaceData] = useState<DataItem | null>(state?.place || null);
     const [dbPlace, setDbPlace] = useState<DataItem | null>(null);
@@ -48,7 +40,6 @@ function PlaceDetailsPage() {
 
     useEffect(() => {
         if (!initialPlaceData && googlePlaceId) {
-            console.warn("No initial place data. Page was likely reloaded directly.");
             setInitialPlaceData({ googlePlaceId: decodeURIComponent(googlePlaceId), name: "Loading..." });
         }
         fetchDetails();
@@ -60,8 +51,6 @@ function PlaceDetailsPage() {
             return null;
         }
         
-        console.log(`[DEBUG] Making request to '${endpoint}'. Sending token:`, token);
-        
         const response = await fetch(`http://localhost:3001/api/places/${endpoint}`, {
             method: 'POST',
             headers: { 
@@ -71,74 +60,51 @@ function PlaceDetailsPage() {
             body: JSON.stringify(body),
         });
 
-        // --- THIS IS THE CORRECTED LOGIC ---
-        // Handle the 401 Unauthorized case FIRST.
         if (response.status === 401) {
             logout();
             alert("Your session has expired. Please log in again.");
-            // We throw an error here to be caught by the calling function's catch block,
-            // preventing it from trying to process a null response.
-            // This also prevents the generic error alert below from firing.
             throw new Error("Session expired"); 
         }
         
-        // Handle all other non-ok responses.
         if (!response.ok) {
             const errorData = await response.json();
-            // This will be caught by the catch block in the calling function (handleFavorite, etc.)
             throw new Error(errorData.message || "An unknown server error occurred.");
         }
         
-        // If everything was ok, return the JSON data.
         return response.json();
     };
+    
+    // Unified comment submission handler
+    const handleCommentSubmit = async (content: string, parentId: number | null = null) => {
+        if (!content.trim()) return;
 
-    const handleCommentSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newComment.trim()) return;
-        
         try {
-            const placePayload = {
-                ...initialPlaceData,
-                googlePlaceId: decodeURIComponent(googlePlaceId!),
-            };
-            
-            const addedComment = await handleInteraction('comment', {
-                 placeData: placePayload,
-                 content: newComment 
+            const placePayload = { ...initialPlaceData, googlePlaceId: decodeURIComponent(googlePlaceId!) };
+            await handleInteraction('comment', {
+                placeData: placePayload,
+                content: content,
+                parentId: parentId,
             });
-
-            if (addedComment) {
-                setComments([addedComment, ...comments]);
-                setNewComment('');
-                if (!dbPlace) fetchDetails();
+            
+            // Re-fetch all comments to get the updated nested structure
+            fetchDetails(); 
+            if (!parentId) {
+                setNewComment(''); // Clear main text area only for top-level comments
             }
         } catch (error) {
-            // The catch block is now simpler. It only catches real errors or our 'Session expired' error.
-            // We can choose to not show an alert for the session expiry since we already did.
             if ((error as Error).message !== "Session expired") {
                 alert(`Error: ${(error as Error).message}`);
             }
             console.error(error);
         }
     };
-    
+
     const handleFavorite = async () => {
         try {
-            const placePayload = {
-                ...initialPlaceData,
-                googlePlaceId: decodeURIComponent(googlePlaceId!),
-            };
-
-            const result = await handleInteraction('favorite', {
-                placeData: placePayload,
-                isFavorite: true 
-            });
-
-            if (result) {
-                alert(`${initialPlaceData?.name} has been added to your favorites!`);
-                if (!dbPlace) fetchDetails();
-            }
+            const placePayload = { ...initialPlaceData, googlePlaceId: decodeURIComponent(googlePlaceId!) };
+            await handleInteraction('favorite', { placeData: placePayload, isFavorite: true });
+            alert(`${initialPlaceData?.name} has been added to your favorites!`);
+            if (!dbPlace) fetchDetails();
         } catch (error) {
             if ((error as Error).message !== "Session expired") {
                 alert(`Error: ${(error as Error).message}`);
@@ -149,7 +115,7 @@ function PlaceDetailsPage() {
 
     const displayPlace = dbPlace || initialPlaceData;
 
-    if (isLoading) return <p className="loading-message">Loading place details...</p>;
+    if (isLoading && !displayPlace) return <p className="loading-message">Loading place details...</p>;
     if (!displayPlace) return <p className="error-message">Place not found.</p>;
 
     return (
@@ -167,7 +133,7 @@ function PlaceDetailsPage() {
             <h2 style={{textAlign: 'center'}}>Comments</h2>
             
             {isLoggedIn && (
-                <form onSubmit={handleCommentSubmit} style={{marginBottom: '2rem'}}>
+                <form onSubmit={(e) => { e.preventDefault(); handleCommentSubmit(newComment); }} style={{marginBottom: '2rem'}}>
                     <textarea 
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
@@ -179,15 +145,10 @@ function PlaceDetailsPage() {
             )}
 
             <div className="comments-list">
-                {comments.length > 0 ? comments.map(comment => (
-                    <div key={comment.id} className="list-item" style={{marginBottom: '1rem'}}>
-                        <p>
-                            <strong>{comment.author?.email || '[Deleted User]'}</strong> 
-                            <span style={{fontSize: '0.8rem', color: '#666'}}> on {new Date(comment.createdAt).toLocaleDateString()}</span>
-                        </p>
-                        <p>{comment.content}</p>
-                    </div>
-                )) : <p>No comments yet. Be the first!</p>}
+                {isLoading && comments.length === 0 && <p>Loading comments...</p>}
+                {!isLoading && comments.length > 0 ? comments.map(comment => (
+                    <CommentItem key={comment.id} comment={comment} onReplySubmit={handleCommentSubmit} />
+                )) : !isLoading && <p>No comments yet. Be the first!</p>}
             </div>
         </div>
     );
