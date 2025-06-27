@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1750625441437,
+      "tag": "0000_military_vermin",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1750630551904,
+      "tag": "0001_freezing_blur",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750675111952,
+      "tag": "0002_dizzy_tigra",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+ALTER TABLE "places" ALTER COLUMN "rating" SET DATA TYPE real;

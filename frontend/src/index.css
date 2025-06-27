@@ -631,3 +631,56 @@ button:active {
     padding: var(--space-5);
   }
 }
+
+
+/* frontend/src/components/SearchFilter.css */
+.search-filter {
+  margin-bottom: var(--space-10);
+  position: relative;
+}
+
+.search-filter label {
+  display: block;
+  margin-bottom: var(--space-3);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  position: relative;
+}
+
+.search-filter select {
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  border: 2px solid var(--surface-tertiary);
+  border-radius: var(--border-radius-xl);
+  box-sizing: border-box;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  appearance: none; /* Remove default arrow */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23475569'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-4) top 50%;
+  background-size: 16px;
+}
+
+.search-filter select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow:
+    0 0 0 4px rgba(30, 58, 138, 0.1),
+    var(--shadow-lg);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+/* Style the button */
+.search-filter button {
+  margin-top: var(--space-4);
+}

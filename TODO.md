@@ -94,55 +94,55 @@ A data-driven application that displays local information (restaurants, parks, e
 
 ### 1.1 Test Planning (Guga)
 
-- [X] Define test strategy document
-- [X] Set up testing environment
-- [X] Create test data sets
-- [X] Define test cases for each feature
+- [x] Define test strategy document
+- [x] Set up testing environment
+- [x] Create test data sets
+- [x] Define test cases for each feature
 
 ### 1.2 Backend Testing (Giorgi)
 
-- [X] Set up Jest for backend testing
-- [X] Write unit tests for data models
-- [X] Write integration tests for API endpoints
-- [X] Implement test coverage reporting
+- [x] Set up Jest for backend testing
+- [x] Write unit tests for data models
+- [x] Write integration tests for API endpoints
+- [x] Implement test coverage reporting
 
 ### 1.3 Frontend Testing (Dato)
 
-- [X] Set up React Testing Library
-- [X] Write component unit tests
-- [X] Write integration tests for user flows
-- [X] Implement E2E tests with Cypress
+- [x] Set up React Testing Library
+- [x] Write component unit tests
+- [x] Write integration tests for user flows
+- [x] Implement E2E tests with Cypress
 
 ## 2. Code Quality & Architecture (120 pts - 27%)
 
 ### 2.1 Project Setup (Guga)
 
-- [X] Initialize Git repository
-- [X] Set up project structure
-- [X] Configure TypeScript
+- [x] Initialize Git repository
+- [x] Set up project structure
+- [x] Configure TypeScript
 
 ### 2.2 Backend Architecture (Giorgi)
 
-- [X] Design API structure
-- [X] Implement data models
-- [X] Set up Express.js server
-- [X] Implement error handling
-- [X] Set up logging system
+- [x] Design API structure
+- [x] Implement data models
+- [x] Set up Express.js server
+- [x] Implement error handling
+- [x] Set up logging system
 
 ### 2.3 Frontend Architecture (Dato)
 
-- [X] Set up React with TypeScript
-- [X] Implement component structure
-- [X] Set up state management
-- [X] Implement routing
-- [X] Set up styling system
+- [x] Set up React with TypeScript
+- [x] Implement component structure
+- [x] Set up state management
+- [x] Implement routing
+- [x] Set up styling system
 
 ### 2.4 Data Management (Dato)
 
-- [X] Design data structure
-- [X] Implement data validation
-- [X] Set up caching system
-- [X] Implement search functionality
+- [x] Design data structure
+- [x] Implement data validation
+- [x] Set up caching system
+- [x] Implement search functionality
 
 ## 3. Functionality & User Experience (80 pts - 18%)
 
@@ -151,8 +151,6 @@ A data-driven application that displays local information (restaurants, parks, e
 - [X] Implement data display
 - [X] Add search functionality
 - [X] Implement filtering
-- [X] Add sorting options
-- [X] Implement pagination
 
 ### 3.2 User Interface (Giorgi)
 

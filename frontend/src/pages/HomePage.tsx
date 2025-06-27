@@ -2,166 +2,167 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { DataItem } from '../../../shared/types';
 import SearchFilter from '../components/SearchFilter';
 import DataList from '../components/DataList';
-
-// Zod schemas
-import { z } from 'zod';
-
-// Zod schemas for general properties only (name, location, rating, etc.)
-const BaseDataItemSchema = z.object({
-    name: z.string(),
-    location: z.string().nullable(),
-    rating: z.number().nullable(),
-    type: z.string(),  // Allow any string for the type
-});
-
-// Cache interface
-interface CacheEntry {
-    data: DataItem[];
-    expiry: number;
-}
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Toast } from '../components/Toast';
 
 function HomePage() {
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
+
+    // State for user-initiated searches
     const [items, setItems] = useState<DataItem[]>([]);
     const [filterText, setFilterText] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    
+    // State for displaying public data to logged-out users
+    const [communityFavorites, setCommunityFavorites] = useState<DataItem[]>([]);
+
+    // General state
+    const [isLoading, setIsLoading] = useState(false); // Used for both search and public fetching
     const [error, setError] = useState<string | null>(null);
     const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
     const [locationLoading, setLocationLoading] = useState(true);
-    const [cache, setCache] = useState<Map<string, CacheEntry>>(new Map());
+    const [validPlaceTypes, setValidPlaceTypes] = useState<string[]>([]);
+    const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' as 'info' | 'success' | 'error' | 'warning' });
 
-    const cacheExpiryTime = 60 * 60 * 1000;
-
-    const getCacheKey = (lat: number, lng: number, keyword: string) => {
-        return `nearbyData_${lat}_${lng}_${keyword}`;
-    };
-
-    const fetchData = useCallback(async (searchKeyword: string) => {
-        if (!location) {
-            setError("Location is required to fetch nearby data.");
-            return;
+    // Fetch place types for the dropdown (publicly accessible)
+    const fetchValidPlaceTypes = useCallback(async () => {
+        try {
+            const response = await fetch('http://localhost:3001/api/nearby');
+            const data = await response.json();
+            if (data.validTypes && Array.isArray(data.validTypes)) {
+                setValidPlaceTypes(data.validTypes);
+            }
+        } catch (error: any) {
+            console.error("Failed to load valid place types.");
         }
+    }, []);
 
-        // Don't search if keyword is empty
-        if (!searchKeyword.trim()) {
-            setItems([]);
-            return;
-        }
-
+    // Fetch community favorites for logged-out users
+    const fetchCommunityFavorites = useCallback(async () => {
         setIsLoading(true);
         setError(null);
-
-        const now = Date.now();
-        const cacheKey = getCacheKey(location.latitude, location.longitude, searchKeyword);
-
-        // Check cache
-        const cachedEntry = cache.get(cacheKey);
-        if (cachedEntry && cachedEntry.expiry > now) {
-            console.log("Using cached data for keyword:", searchKeyword);
-            setItems(cachedEntry.data);
-            setIsLoading(false);
-            return;
-        }
-
         try {
-            console.log(`Fetching data for keyword: "${searchKeyword}"`);
-            const response = await fetch(
-                `http://localhost:3001/api/nearby?latitude=${location.latitude}&longitude=${location.longitude}&keyword=${searchKeyword}`
-            );
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const rawData = await response.json();
-
-            // Data Validation
-            const validatedData: DataItem[] = [];
-            if (Array.isArray(rawData)) {
-                rawData.forEach((item: any) => {
-                    try {
-                        const validatedItem = BaseDataItemSchema.parse(item) as DataItem;
-                        validatedData.push(validatedItem);
-                    } catch (err: any) {
-                        console.error("Validation error for item:", item, err.errors);
-                        setError("Data validation failed. Check console for details.");
-                    }
-                });
-            }
-
-            console.log(`Setting ${validatedData.length} items for keyword: "${searchKeyword}"`);
-            setItems(validatedData);
-
-            // Update cache
-            const newCache = new Map(cache);
-            newCache.set(cacheKey, {
-                data: validatedData,
-                expiry: now + cacheExpiryTime,
-            });
-            setCache(newCache);
-
+            const response = await fetch('http://localhost:3001/api/places/community-favorites');
+            if (!response.ok) throw new Error("Could not load community favorites.");
+            const data = await response.json();
+            setCommunityFavorites(data);
         } catch (err: any) {
-            setError(err.message || 'Failed to fetch data');
-            console.error("API data error:", err);
+            setError(err.message);
         } finally {
             setIsLoading(false);
         }
-    }, [location, cache, cacheExpiryTime]);
-
-    // Get user's current location
-    useEffect(() => {
-        const getLocation = () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        setLocation({
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude,
-                        });
-                        setLocationLoading(false);
-                    },
-                    (error) => {
-                        setError(`Error getting location: ${error.message}`);
-                        setLocationLoading(false);
-                    }
-                );
-            } else {
-                setError("Geolocation is not supported by this browser.");
-                setLocationLoading(false);
-            }
-        };
-        getLocation();
     }, []);
 
+    useEffect(() => {
+        fetchValidPlaceTypes();
+        // Get user's physical location once on load
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+                    setLocationLoading(false);
+                },
+                (error) => {
+                    setError(`Error getting location: ${error.message}`);
+                    setLocationLoading(false);
+                }
+            );
+        } else {
+            setError("Geolocation is not supported by this browser.");
+            setLocationLoading(false);
+        }
+    }, [fetchValidPlaceTypes]);
+
+    // This effect decides what public data to show based on login state
+    useEffect(() => {
+        if (!isLoggedIn) {
+            fetchCommunityFavorites();
+        } else {
+            // Clear community data when user logs in to show search prompt
+            setCommunityFavorites([]); 
+        }
+    }, [isLoggedIn, fetchCommunityFavorites]);
+    
+    // The actual search data fetch function for logged-in users
+    const fetchData = useCallback(async (searchKeyword: string) => {
+        if (!location) return setError("Location is required to fetch nearby data.");
+        if (!searchKeyword.trim()) return setItems([]);
+        
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('http://localhost:3001/api/nearby', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ latitude: location.latitude, longitude: location.longitude, keyword: searchKeyword })
+            });
+            if (!response.ok) throw new Error((await response.json()).message || "Search failed");
+            setItems(await response.json());
+        } catch (err: any) {
+            setError(err.message);
+            setItems([]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [location]);
+
+    // The protected search handler
     const handleSearch = (searchText: string) => {
-        console.log(`Search initiated for: "${searchText}"`);
+        if (!isLoggedIn) {
+            setToast({ isVisible: true, message: 'Please log in to search for places.', type: 'warning' });
+            setTimeout(() => navigate('/login'), 2000);
+            return;
+        }
         setFilterText(searchText);
         if (location) {
             fetchData(searchText);
         }
     };
 
-    const displayItems = items;
-
+    // --- RENDER LOGIC ---
     return (
         <div className="home-page">
+            <Toast 
+                isVisible={toast.isVisible}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, isVisible: false })}
+            />
+
             <h1 className="app-title">Local Data Lister</h1>
 
-            <SearchFilter onSearch={handleSearch} />
+            <SearchFilter onSearch={handleSearch} validPlaceTypes={validPlaceTypes} />
 
             <hr className="divider" />
-
+            
             {locationLoading && <p className="loading-message">Getting your location...</p>}
-            {isLoading && <p className="loading-message">Searching for places...</p>}
-            {error && <p className="error-message">Error: {error}</p>}
-
-            {!locationLoading && !isLoading && !error && (
-                displayItems.length > 0 ? (
-                    <DataList items={displayItems} />
-                ) : filterText ? (
-                    <p>No items found for "{filterText}". Try a different search term.</p>
-                ) : (
-                    <p>Enter a search term to find nearby places.</p>
-                )
+            
+            {!isLoggedIn && !locationLoading && (
+                <>
+                    <h2 style={{ textAlign: 'center' }}>Community Favorites</h2>
+                    <p style={{ textAlign: 'center', marginBottom: '2rem' }}>Log in to search, comment, and add your own favorites!</p>
+                    {isLoading && <p className="loading-message">Loading community favorites...</p>}
+                    {error && <p className="error-message">{error}</p>}
+                    {!isLoading && communityFavorites.length > 0 && <DataList items={communityFavorites} />}
+                    {!isLoading && communityFavorites.length === 0 && !error && <p style={{textAlign: 'center'}}>No community favorites yet. Log in to be the first!</p>}
+                </>
+            )}
+            
+            {isLoggedIn && !locationLoading && (
+                <>
+                    {isLoading && <p className="loading-message">Searching for places...</p>}
+                    {error && <p className="error-message">{error}</p>}
+                    {!isLoading && !error && (
+                        items.length > 0 ? (
+                            <DataList items={items} />
+                        ) : filterText ? (
+                            <p style={{textAlign: 'center'}}>No items found for "{filterText}". Try a different search term.</p>
+                        ) : (
+                            <p style={{textAlign: 'center'}}>Select a place type and click Search to find nearby places.</p>
+                        )
+                    )}
+                </>
             )}
         </div>
     );
