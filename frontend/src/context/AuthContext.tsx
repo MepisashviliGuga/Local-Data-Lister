@@ -1,25 +1,26 @@
+// frontend/src/context/AuthContext.tsx
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { User } from '@shared/types'; // <-- Import the shared type
 
 // Define the shape of the data and functions in our context
 interface AuthContextType {
     token: string | null;
-    user: { id: number; email: string } | null;
-    login: (token: string, user: { id: number; email: string }) => void;
+    user: User | null; // <-- Use the User type
+    login: (token: string, user: User) => void;
     logout: () => void;
     isLoggedIn: boolean;
+    updateUser: (updatedUserData: Partial<User>) => void; // <-- Add an update function
 }
 
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Create the Provider component. This will wrap our entire app.
+// Create the Provider component.
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [token, setToken] = useState<string | null>(null);
-    const [user, setUser] = useState<{ id: number; email: string } | null>(null);
+    const [user, setUser] = useState<User | null>(null); // <-- Use the User type
 
-    // This effect runs only once when the app starts
     useEffect(() => {
-        // Check if a user session is already stored in the browser's localStorage
         const storedToken = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
         if (storedToken && storedUser) {
@@ -28,10 +29,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
-    const login = (newToken: string, newUser: { id: number; email: string }) => {
+    const login = (newToken: string, newUser: User) => { // <-- Use the User type
         setToken(newToken);
         setUser(newUser);
-        // Store the session in localStorage to persist it across page refreshes
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(newUser));
     };
@@ -39,16 +39,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const logout = () => {
         setToken(null);
         setUser(null);
-        // Clear the session from localStorage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
     };
+    
+    // vvv NEW FUNCTION vvv
+    const updateUser = (updatedUserData: Partial<User>) => {
+        setUser(currentUser => {
+            if (!currentUser) return null;
+            const newUser = { ...currentUser, ...updatedUserData };
+            localStorage.setItem('user', JSON.stringify(newUser));
+            return newUser;
+        });
+    };
 
-    const isLoggedIn = !!token; // A simple boolean to check if the user is logged in
+    const isLoggedIn = !!token;
 
-    // Provide the state and functions to all child components
     return (
-        <AuthContext.Provider value={{ token, user, login, logout, isLoggedIn }}>
+        <AuthContext.Provider value={{ token, user, login, logout, isLoggedIn, updateUser }}>
             {children}
         </AuthContext.Provider>
     );
