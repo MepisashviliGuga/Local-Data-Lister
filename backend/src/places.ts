@@ -3,21 +3,32 @@ import { Router } from 'express';
 import { db } from './db';
 import { places, userFavorites, comments, notifications } from './db/schema';
 import { protect, AuthenticatedRequest } from './auth.middleware';
-import { eq, and, isNull } from 'drizzle-orm';
+import { eq, and, isNull, desc } from 'drizzle-orm';
 import logger from './logger';
-
+ 
 const router = Router();
-
+ 
+// A helper function to transform a DB place record to a DataItem with a nested location object
+const transformDbPlaceToDataItem = (place: (typeof places.$inferSelect)) => {
+    return {
+        ...place,
+        location: (place.latitude && place.longitude) ? {
+            latitude: parseFloat(place.latitude),
+            longitude: parseFloat(place.longitude)
+        } : null
+    };
+};
+ 
 const findOrCreatePlace = async (placeData: any) => {
     const googlePlaceId = placeData.googlePlaceId;
     if (!googlePlaceId) {
         throw new Error("googlePlaceId is required to find or create a place.");
     }
-
+ 
     let place = await db.query.places.findFirst({
         where: eq(places.googlePlaceId, googlePlaceId),
     });
-
+ 
     if (!place) {
         logger.info(`Place not found in DB. Creating new entry for: ${placeData.name}`);
         const newPlaceResult = await db.insert(places).values({
@@ -33,52 +44,52 @@ const findOrCreatePlace = async (placeData: any) => {
         }).returning();
         place = newPlaceResult[0];
     }
-    
     return place;
 };
-
+ 
 // GET /api/places/community-favorites
 router.get('/community-favorites', async (req, res) => {
     try {
-        const favoritePlaces = await db.selectDistinct({place: places}).from(places)
+        const favoritePlacesRaw = await db.selectDistinct({place: places}).from(places)
             .innerJoin(userFavorites, eq(places.id, userFavorites.placeId))
             .where(eq(userFavorites.isFavorite, true));
-        
-        res.json(favoritePlaces.map(p => p.place));
+        const favoritePlaces = favoritePlacesRaw.map(p => transformDbPlaceToDataItem(p.place));
+        res.json(favoritePlaces);
     } catch (error: any) {
         logger.error(`Error fetching community favorites: ${error.message}`);
         res.status(500).json({ message: 'Server error' });
     }
 });
-
-
+ 
+ 
 // GET /api/places/by-google-id/:googlePlaceId
 router.get('/by-google-id/:googlePlaceId', async (req, res) => {
     const { googlePlaceId } = req.params;
     try {
-        const place = await db.query.places.findFirst({
+        const placeFromDb = await db.query.places.findFirst({
             where: eq(places.googlePlaceId, googlePlaceId),
         });
-
-        if (!place) {
+ 
+        if (!placeFromDb) {
             res.status(404).json({ message: 'Place not yet in our database.' });
             return;
         }
-
+        const place = transformDbPlaceToDataItem(placeFromDb);
+ 
         // 1. Fetch all comments for the place
         const allComments = await db.query.comments.findMany({
             where: eq(comments.placeId, place.id),
             with: { author: { columns: { id: true, email: true, name: true } } },
             orderBy: (comments, { asc }) => [asc(comments.createdAt)],
         });
-
+ 
         // 2. Structure comments into a nested tree
         const commentMap = new Map();
         allComments.forEach((comment: any) => {
             comment.replies = [];
             commentMap.set(comment.id, comment);
         });
-
+ 
         const rootComments: any[] = [];
         allComments.forEach((comment: any) => {
             if (comment.parentId) {
@@ -90,31 +101,32 @@ router.get('/by-google-id/:googlePlaceId', async (req, res) => {
                 rootComments.push(comment);
             }
         });
-        
         // 3. Send the nested structure
         res.json({ place, comments: rootComments });
-
+ 
     } catch (error: any) {
         logger.error(`Error fetching place by google ID: ${error.message}`);
         res.status(500).json({ message: 'Server error' });
     }
 });
-
-
+ 
+ 
 // GET /api/places/me/favorites
 router.get('/me/favorites', protect, async (req: AuthenticatedRequest, res) => {
     const userId = req.user!.userId;
     try {
-        const userFavoriteEntries = await db.select({ place: places }).from(userFavorites)
+        const userFavoriteEntriesRaw = await db.select({ place: places }).from(userFavorites)
             .innerJoin(places, eq(userFavorites.placeId, places.id))
             .where(and(eq(userFavorites.userId, userId), eq(userFavorites.isFavorite, true)));
-        res.json(userFavoriteEntries.map(entry => entry.place));
+ 
+        const userFavoriteEntries = userFavoriteEntriesRaw.map(entry => transformDbPlaceToDataItem(entry.place));
+        res.json(userFavoriteEntries);
     } catch (error: any) {
         logger.error(`Error fetching user favorites: ${error.message}`);
         res.status(500).json({ message: 'Server error' });
     }
 });
-
+ 
 // POST /api/places/favorite
 router.post('/favorite', protect, async (req: AuthenticatedRequest, res) => {
     const userId = req.user!.userId;
@@ -136,19 +148,19 @@ router.post('/favorite', protect, async (req: AuthenticatedRequest, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
-
+ 
 // POST /api/places/comment
 router.post('/comment', protect, async (req: AuthenticatedRequest, res) => {
     const userId = req.user!.userId;
     const { placeData, content, parentId } = req.body;
-
+ 
     if (!content) {
         res.status(400).json({ message: 'Comment content cannot be empty.' });
         return;
     }
     try {
         const place = await findOrCreatePlace(placeData);
-
+ 
         // Insert the new comment
         const newCommentResult = await db.insert(comments).values({
             userId,
@@ -156,15 +168,14 @@ router.post('/comment', protect, async (req: AuthenticatedRequest, res) => {
             content,
             parentId, // Can be null for top-level comments
         }).returning();
-        
         const newComment = newCommentResult[0];
-
+ 
         // If it's a reply, create a notification
         if (parentId) {
             const parentComment = await db.query.comments.findFirst({
                 where: eq(comments.id, parentId)
             });
-
+ 
             // Make sure not to notify yourself
             if (parentComment && parentComment.userId !== userId) {
                 await db.insert(notifications).values({
@@ -175,19 +186,19 @@ router.post('/comment', protect, async (req: AuthenticatedRequest, res) => {
                 });
             }
         }
-
+ 
         // Fetch the new comment with author details to return to the client
         const newCommentWithAuthor = await db.query.comments.findFirst({
             where: eq(comments.id, newComment.id),
             with: { author: { columns: { id: true, email: true, name: true } } }
         });
-
+ 
         res.status(201).json(newCommentWithAuthor);
     } catch (error: any) {
         logger.error(`Error adding comment: ${error.message}`);
         res.status(500).json({ message: 'Server error' });
     }
 });
-
-
+ 
+ 
 export default router;
