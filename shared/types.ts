@@ -12,15 +12,15 @@ export interface DataItem {
     location?: {
         latitude: number;
         longitude: number;
-    };
+    } | null; // Allow location to be null
 }
-
+ 
 export interface User {
     id: number;
     name: string | null;
     email: string;
 }
-
+ 
 export interface Comment {
     id: number;
     content: string;
@@ -32,8 +32,11 @@ export interface Comment {
     };
     parentId: number | null;
     replies: Comment[]; // For nesting
+    // === NEW FIELDS ===
+    score: number;
+    userVote: 1 | -1 | null;
 }
-
+ 
 export interface Notification {
     id: number;
     type: string;

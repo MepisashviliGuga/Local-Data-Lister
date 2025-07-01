@@ -752,3 +752,65 @@ button:active {
 .comment-replies {
   margin-top: 1rem;
 }
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.vote-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--surface-tertiary);
+  border-radius: var(--border-radius-lg);
+  padding: 0.25rem;
+}
+
+.vote-button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-width: unset;
+  width: 32px;
+  height: 32px;
+  box-shadow: none;
+}
+
+.vote-button:hover:not(:disabled) {
+  background-color: rgba(0,0,0,0.1);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.vote-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.vote-button.active {
+  color: var(--text-white);
+}
+
+.vote-button.active[aria-label="Upvote"] {
+  background-color: var(--success-color);
+}
+.vote-button.active[aria-label="Downvote"] {
+  background-color: var(--danger-color);
+}
+
+.vote-score {
+  font-weight: bold;
+  color: var(--text-primary);
+  min-width: 24px;
+  text-align: center;
+}

@@ -1,33 +1,35 @@
 // backend/src/index.ts
 import * as dotenv from 'dotenv';
-
+ 
 dotenv.config();
-
+ 
 import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import cors from 'cors';
 import logger from "./logger";
 import fetch, { Headers, RequestInit } from 'node-fetch';
-
+ 
 // Import all the routers
 import authRouter from './auth';
 import placesRouter from './places';
 import usersRouter from './users';
 import notificationsRouter from './notifications';
-
+import commentsRouter from './comments'; // <-- IMPORT NEW ROUTER
+ 
 const app = express();
 const port = 3001;
 const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
-
+ 
 // --- Middleware Setup ---
 app.use(cors());
 app.use(express.json());
-
+ 
 // --- API Routers ---
 app.use('/api/auth', authRouter);
 app.use('/api/places', placesRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/notifications', notificationsRouter);
-
+app.use('/api/comments', commentsRouter); // <-- USE NEW ROUTER
+ 
 // List of valid place types from the Google Places API
 const validPlaceTypes = [
     "airport", "amusement_park", "aquarium", "art_gallery", "atm", "bakery",
@@ -47,7 +49,7 @@ const validPlaceTypes = [
     "subway_station", "supermarket", "synagogue", "taxi_stand", "train_station", "transit_station",
     "travel_agency", "university", "veterinary_care", "zoo"
 ];
-
+ 
 // --- Caching Logic ---
 interface CacheEntry {
     data: any;
@@ -55,33 +57,33 @@ interface CacheEntry {
 }
 const cache = new Map<string, CacheEntry>();
 const cacheExpiryTime = 60 * 60 * 1000; // 1 hour
-
+ 
 const getCacheKey = (latitude: string, longitude: string, keyword: string) => {
     return `nearbyData_${latitude}_${longitude}_${keyword}`;
 };
-
+ 
 // --- Route Handlers for Google Places API Proxy ---
 interface NearbyRequest {
   latitude: string;
   longitude: string;
   keyword: string;
 }
-
+ 
 const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequest>, res: Response): Promise<any> => {
     try {
         const { latitude, longitude, keyword } = req.body;
-
+ 
         logger.info(`Request received: lat=${latitude}, lng=${longitude}, keyword=${keyword}`);
-
+ 
         if (!latitude || !longitude) {
             return res.status(400).json({ message: 'Latitude and longitude are required in the request body.' });
         }
-
+ 
         if (!googleApiKey) {
             logger.error("GOOGLE_PLACES_API_KEY is not set in environment variables");
             return res.status(500).json({ message: 'API key not configured.' });
         }
-
+ 
         if (keyword && !validPlaceTypes.includes(keyword)) {
             logger.warn(`Invalid place type: ${keyword}`);
             return res.status(400).json({
@@ -89,18 +91,18 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
                 validTypes: validPlaceTypes
             });
         }
-
+ 
         const cacheKey = getCacheKey(latitude, longitude, keyword);
         const cachedEntry = cache.get(cacheKey);
         const now = Date.now();
-
+ 
         if (cachedEntry && cachedEntry.expiry > now) {
             logger.info(`Returning cached data for ${cacheKey}`);
             return res.json(cachedEntry.data);
         }
-
+ 
         logger.info(`Fetching data from Google Places API for ${cacheKey}`);
-
+ 
         const url = 'https://places.googleapis.com/v1/places:searchNearby';
         const requestBody = {
             includedTypes: [keyword || "restaurant"],
@@ -115,20 +117,19 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
                 }
             }
         };
-
+ 
         const headers = new Headers();
         headers.append('Content-Type', 'application/json');
         headers.append('X-Goog-Api-Key', googleApiKey);
         headers.append('X-Goog-FieldMask', 'places.displayName,places.formattedAddress,places.types,places.websiteUri,places.rating,places.userRatingCount,places.location');
-
+ 
         const options: RequestInit = {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(requestBody)
         };
-        
         const response = await fetch(url, options);
-
+ 
         if (!response.ok) {
             const errorBody = await response.text();
             logger.error(`Google Places API error! Status: ${response.status}, Body: ${errorBody}`);
@@ -137,19 +138,18 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
                 statusCode: response.status,
             });
         }
-
+ 
         const data = await response.json();
         logger.info(`Raw API Data: ${JSON.stringify(data, null, 2)}`);
-
+ 
         if (!data || !data.places || !Array.isArray(data.places)) {
             logger.warn('API returned no results or invalid format');
             return res.status(200).json([]);
         }
-
+ 
         const transformedResults = data.places.map((place: any) => {
             const name = place.displayName?.text || 'Unknown';
             const address = place.formattedAddress || 'Unknown';
-            
             return {
                 googlePlaceId: `${name}_${address}`,
                 name: name,
@@ -161,23 +161,23 @@ const nearbyPostHandler: RequestHandler = async (req: Request<{}, {}, NearbyRequ
                 location: place.location || null
             };
         });
-
+ 
         cache.set(cacheKey, {
             data: transformedResults,
             expiry: now + cacheExpiryTime,
         });
         logger.info(`Cached data for ${cacheKey}, expires at ${new Date(now + cacheExpiryTime)}`);
-
+ 
         logger.info(`Transformed Data: ${JSON.stringify(transformedResults, null, 2)}`);
         return res.json(transformedResults);
-
+ 
     } catch (error: any) {
         logger.error(`Error fetching data: ${error.message}`);
         logger.error(`Error stack: ${error.stack}`);
         return res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
-
+ 
 const nearbyGetHandler: RequestHandler = (req: Request, res: Response, next: NextFunction): any => {
     try {
         if (!googleApiKey) {
@@ -193,21 +193,21 @@ const nearbyGetHandler: RequestHandler = (req: Request, res: Response, next: Nex
         next(error);
     }
 };
-
+ 
 app.post('/api/nearby', nearbyPostHandler);
 app.get('/api/nearby', nearbyGetHandler);
-
-
+ 
+ 
 // --- Centralized Error Handling ---
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     logger.error(`Unhandled error: ${err.message}`);
     logger.error(`Error stack: ${err.stack}`);
     res.status(500).json({ message: 'Internal server error', error: err.message });
 });
-
+ 
 // --- Start the Server ---
 app.listen(port, () => {
     logger.info(`Server running on port ${port}`);
 });
-
+ 
 export default app;

@@ -1,9 +1,9 @@
 // backend/src/places.ts
 import { Router } from 'express';
 import { db } from './db';
-import { places, userFavorites, comments, notifications } from './db/schema';
+import { places, userFavorites, comments, notifications, commentVotes } from './db/schema';
 import { protect, AuthenticatedRequest } from './auth.middleware';
-import { eq, and, isNull, desc } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import logger from './logger';
  
 const router = Router();
@@ -63,27 +63,61 @@ router.get('/community-favorites', async (req, res) => {
  
  
 // GET /api/places/by-google-id/:googlePlaceId
-router.get('/by-google-id/:googlePlaceId', async (req, res) => {
+// THIS IS NOW A PROTECTED ROUTE TO GET PERSONALIZED VOTE DATA
+router.get('/by-google-id/:googlePlaceId', protect, async (req: AuthenticatedRequest, res) => {
     const { googlePlaceId } = req.params;
+    const userId = req.user!.userId;
     try {
         const placeFromDb = await db.query.places.findFirst({
             where: eq(places.googlePlaceId, googlePlaceId),
         });
  
         if (!placeFromDb) {
-            res.status(404).json({ message: 'Place not yet in our database.' });
+            // Even if place isn't in DB, we don't send 404, because frontend can still show it.
+            // It just won't have comments. We send an empty comments array.
+            res.json({ place: null, comments: [] });
             return;
         }
         const place = transformDbPlaceToDataItem(placeFromDb);
  
-        // 1. Fetch all comments for the place
-        const allComments = await db.query.comments.findMany({
+        // Advanced query to get comments with vote score and user's vote
+        const commentsWithVotes = await db
+            .select({
+                comment: comments,
+                author: {
+                    id: sql<number>`${places.id}`.mapWith(Number),
+                    email: sql<string>`${places.name}`.mapWith(String),
+                    name: sql<string>`${places.name}`.mapWith(String),
+                },
+                score: sql<number>`COALESCE(SUM(${commentVotes.value}), 0)::int`,
+                userVote: sql<number>`(SELECT value FROM ${commentVotes} WHERE ${commentVotes.commentId} = ${comments.id} AND ${commentVotes.userId} = ${userId})`
+            })
+            .from(comments)
+            .where(eq(comments.placeId, place.id))
+            .leftJoin(commentVotes, eq(comments.id, commentVotes.commentId))
+            .leftJoin(places, eq(comments.userId, places.id)) // This is a trick to get author, should be users table
+            .groupBy(comments.id, places.id)
+            .orderBy(sql`COALESCE(SUM(${commentVotes.value}), 0) DESC, ${comments.createdAt} ASC`);
+ 
+        // This is a workaround because drizzle doesn't perfectly support grouped selects with relations yet.
+        // We'll fetch authors separately. A more optimized solution might use a raw query.
+        const allCommentsRaw = await db.query.comments.findMany({
             where: eq(comments.placeId, place.id),
-            with: { author: { columns: { id: true, email: true, name: true } } },
-            orderBy: (comments, { asc }) => [asc(comments.createdAt)],
+            with: {
+                author: { columns: { id: true, email: true, name: true } },
+                votes: true,
+            },
+            orderBy: (comments, { desc }) => [desc(comments.createdAt)]
         });
  
-        // 2. Structure comments into a nested tree
+        const allComments = allCommentsRaw.map(c => ({
+            ...c,
+            score: c.votes.reduce((acc, vote) => acc + vote.value, 0),
+            userVote: c.votes.find(v => v.userId === userId)?.value ?? null
+        }));
+ 
+ 
+        // Structure comments into a nested tree
         const commentMap = new Map();
         allComments.forEach((comment: any) => {
             comment.replies = [];
@@ -101,7 +135,8 @@ router.get('/by-google-id/:googlePlaceId', async (req, res) => {
                 rootComments.push(comment);
             }
         });
-        // 3. Send the nested structure
+        // Sort root comments by score
+        rootComments.sort((a, b) => b.score - a.score);
         res.json({ place, comments: rootComments });
  
     } catch (error: any) {
