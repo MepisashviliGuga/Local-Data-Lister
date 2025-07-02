@@ -43,6 +43,13 @@
       "when": 1751400761146,
       "tag": "0005_harsh_red_ghost",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1751482729902,
+      "tag": "0006_complex_iron_patriot",
+      "breakpoints": true
     }
   ]
 }
